@@ -1,0 +1,95 @@
+export const products = [
+  {
+    id: 1,
+    slug: 'galleton-chips-almendras',
+    name: 'Galletón Chips & Almendras',
+    tagline: 'Crujiente · Keto · Premium',
+    shortDesc: 'Harina de almendra, chips de chocolate sin azúcar y almendras laminadas tostadas.',
+    description:
+      'Galletón keto premium elaborado con harina de almendra, chips de chocolate sin azúcar y almendras laminadas, combinando textura crocante y sabor equilibrado en una alternativa saludable y sofisticada.',
+    highlights: [
+      'Vainilla real y textura chewy',
+      'Chips de chocolate sin azúcar',
+      'Almendras laminadas tostadas',
+      'Endulzado con eritritol y extracto de monk fruit',
+      'Sin azúcar añadida',
+      'Gluten free',
+      '6 g de proteína por galletón',
+      'Ideal como snack saludable o acompañamiento de café',
+    ],
+    sizes: [
+      { id: 'ind', label: 'Individual', size: '45g', pieces: '1 galletón', price: 8.5 },
+      { id: 'pack', label: 'Pack x3', size: '135g', pieces: '3 galletones', price: 25.0 },
+    ],
+    badge: 'MÁS VENDIDO',
+    accentClass: 'text-nk-gold',
+    btnClass: 'bg-nk-choco hover:bg-nk-gold text-nk-ivory',
+    cardBg: 'bg-white',
+    protein: '6g',
+    netWeight: '45g / 135g',
+    packaging: 'Bolsa doypack resellable',
+  },
+  {
+    id: 2,
+    slug: 'galleton-vainilla-chips',
+    name: 'Galletón Vainilla Chips',
+    tagline: 'Suave · Aromático · Keto',
+    shortDesc: 'Harina de almendra con vainilla real y chips de chocolate sin azúcar.',
+    description:
+      'Galletón keto premium elaborado con harina de almendra y vainilla real, combinado con chips de chocolate sin azúcar para lograr un equilibrio perfecto entre suavidad, dulzor y textura.',
+    highlights: [
+      'Vainilla real y textura chewy',
+      'Chips de chocolate sin azúcar',
+      'Endulzado con eritritol y extracto de monk fruit',
+      'Sin azúcar añadida',
+      'Gluten free',
+      '5 g de proteína por galletón',
+      'Elaborado con ingredientes seleccionados',
+      'Ideal para snack, lonchera saludable o acompañamiento de café',
+    ],
+    sizes: [
+      { id: 'ind', label: 'Individual', size: '45g', pieces: '1 galletón', price: 8.5 },
+      { id: 'pack', label: 'Pack x3', size: '135g', pieces: '3 galletones', price: 25.0 },
+    ],
+    badge: null,
+    accentClass: 'text-nk-olive',
+    btnClass: 'bg-nk-olive hover:bg-nk-choco text-nk-ivory',
+    cardBg: 'bg-nk-ivory2',
+    protein: '5g',
+    netWeight: '45g / 135g',
+    packaging: 'Bolsa doypack resellable',
+  },
+  {
+    id: 3,
+    slug: 'barra-energetica-cacao-avellana',
+    name: 'Barra Energética Cacao & Avellana',
+    tagline: 'Energizante · Intenso · Keto',
+    shortDesc: 'Cacao puro con avellanas seleccionadas. Energía sin azúcar.',
+    description:
+      'Barra energética keto con cacao puro y avellanas seleccionadas. La combinación perfecta para un momento de energía real sin comprometer tu bienestar ni tu perfil keto.',
+    highlights: [
+      'Cacao puro de calidad',
+      'Avellanas seleccionadas',
+      'Sin azúcar añadida',
+      'Gluten free',
+      'Endulzado naturalmente',
+      'Alto en grasas buenas',
+      'Perfil nutricional keto',
+      'Ideal entre comidas o antes de entrenar',
+    ],
+    sizes: [
+      { id: 'ind', label: 'Individual', size: '45g', pieces: '1 barra', price: 8.5 },
+    ],
+    badge: 'NUEVO',
+    accentClass: 'text-nk-gold',
+    btnClass: 'bg-nk-gold hover:bg-nk-choco text-nk-ivory',
+    cardBg: 'bg-white',
+    protein: '—',
+    netWeight: '45g',
+    packaging: 'Bolsa doypack resellable',
+  },
+]
+
+export function getProductBySlug(slug) {
+  return products.find((p) => p.slug === slug)
+}
