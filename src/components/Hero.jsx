@@ -100,12 +100,12 @@ export default function Hero() {
           <motion.div
             animate={{ y: [0, -10, 0] }}
             transition={{ duration: 4.5, repeat: Infinity, ease: 'easeInOut' }}
-            className="relative w-full max-w-xs lg:max-w-sm"
+            className="relative w-full"
           >
             <img
               src="/images/chips-almendras-lifestyle.jpg"
               alt="Galletón Chips Almendras NUDA KETO"
-              className="w-full h-auto rounded-3xl shadow-[0_24px_64px_rgba(75,53,39,0.2)] object-cover"
+              className="w-full h-auto rounded-3xl shadow-[0_32px_80px_rgba(75,53,39,0.22)] object-cover"
               loading="eager"
             />
 
