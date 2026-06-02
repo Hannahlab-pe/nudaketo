@@ -100,7 +100,7 @@ export default function Navbar() {
 
           {/* CTA WhatsApp */}
           <a
-            href="https://wa.me/51999999999?text=Hola!%20Me%20interesa%20un%20pedido%20de%20NUDA%20KETO"
+            href="https://wa.me/51986769073?text=Hola!%20Me%20interesa%20un%20pedido%20de%20NUDA%20KETO"
             target="_blank"
             rel="noreferrer"
             className="flex items-center gap-2 bg-nk-choco hover:bg-nk-gold text-nk-ivory px-5 py-2.5 rounded-full text-sm font-semibold transition-all duration-300 hover:scale-105 hover:shadow-[0_4px_20px_rgba(75,53,39,0.25)]"
@@ -157,7 +157,7 @@ export default function Navbar() {
                 </motion.a>
               ))}
               <a
-                href="https://wa.me/51999999999"
+                href="https://wa.me/51986769073"
                 className="mt-2 flex items-center justify-center gap-2 bg-nk-choco text-nk-ivory px-5 py-3 rounded-full text-sm font-semibold"
               >
                 <IconWhatsApp />

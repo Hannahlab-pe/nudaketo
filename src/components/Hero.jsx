@@ -56,7 +56,7 @@ export default function Hero() {
 
           <motion.div {...fadeUp(0.45)} className="flex flex-col sm:flex-row flex-wrap gap-3">
             <a
-              href="https://wa.me/51999999999?text=Hola!%20Quiero%20hacer%20un%20pedido%20de%20NUDA%20KETO"
+              href="https://wa.me/51986769073?text=Hola!%20Quiero%20hacer%20un%20pedido%20de%20NUDA%20KETO"
               target="_blank"
               rel="noreferrer"
               className="flex items-center justify-center gap-2.5 bg-nk-choco hover:bg-nk-gold text-nk-ivory px-6 py-3.5 rounded-full font-semibold text-sm sm:text-base transition-all duration-300 hover:scale-105 hover:shadow-[0_8px_30px_rgba(75,53,39,0.3)]"

@@ -35,7 +35,7 @@ export default function ComplaintsPage() {
       + `*N° de pedido:* ${form.pedidoId || 'No indicado'}\n\n`
       + `*Detalle del ${form.tipo}:*\n${form.detalle}\n\n`
       + `*Pedido / Pretensión:*\n${form.pedido}`
-    window.open(`https://wa.me/51999999999?text=${encodeURIComponent(msg)}`, '_blank')
+    window.open(`https://wa.me/51986769073?text=${encodeURIComponent(msg)}`, '_blank')
     setSubmitted(true)
   }
 

@@ -120,7 +120,7 @@ export default function Footer() {
             <div className="mt-3 sm:mt-4 pt-3 sm:pt-4 border-t border-nk-ivory/8">
               <p style={{ fontFamily: "'DM Mono', monospace" }} className="text-nk-gold text-[10px] tracking-[3px] mb-2">CONTACTO</p>
               <a
-                href="https://wa.me/51999999999"
+                href="https://wa.me/51986769073"
                 className="text-nk-ivory/55 hover:text-nk-gold text-xs sm:text-sm transition-colors flex items-center gap-2"
               >
                 <svg viewBox="0 0 24 24" className="w-3.5 h-3.5 fill-current shrink-0">

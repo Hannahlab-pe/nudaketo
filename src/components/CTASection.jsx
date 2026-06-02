@@ -57,7 +57,7 @@ export default function CTASection() {
               initial={{ opacity: 0, y: 20 }}
               animate={inView ? { opacity: 1, y: 0 } : {}}
               transition={{ delay: 0.4 }}
-              href="https://wa.me/51999999999?text=Hola!%20Quiero%20hacer%20un%20pedido%20de%20NUDA%20KETO"
+              href="https://wa.me/51986769073?text=Hola!%20Quiero%20hacer%20un%20pedido%20de%20NUDA%20KETO"
               target="_blank"
               rel="noreferrer"
               className="flex items-center gap-2.5 bg-nk-gold hover:bg-nk-gold2 text-nk-choco px-7 sm:px-9 py-3.5 sm:py-4 rounded-full text-base sm:text-lg font-bold transition-all duration-300 hover:scale-105 hover:shadow-[0_8px_30px_rgba(194,164,94,0.4)]"

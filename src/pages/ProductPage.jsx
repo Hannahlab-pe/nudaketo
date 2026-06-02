@@ -177,7 +177,7 @@ export default function ProductPage() {
 
             {/* WhatsApp directo */}
             <a
-              href={`https://wa.me/51999999999?text=Hola!%20Quiero%20pedir%20${encodeURIComponent(product.name)}%20(${encodeURIComponent(selectedSize?.label ?? '')}%20${encodeURIComponent(selectedSize?.size ?? '')})`}
+              href={`https://wa.me/51986769073?text=Hola!%20Quiero%20pedir%20${encodeURIComponent(product.name)}%20(${encodeURIComponent(selectedSize?.label ?? '')}%20${encodeURIComponent(selectedSize?.size ?? '')})`}
               target="_blank"
               rel="noreferrer"
               className="flex items-center justify-center gap-2 border-2 border-nk-choco/20 hover:border-nk-gold text-nk-muted hover:text-nk-choco py-3 rounded-xl text-sm font-medium transition-all duration-200"

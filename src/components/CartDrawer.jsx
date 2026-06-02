@@ -148,7 +148,7 @@ export default function CartDrawer() {
                 </div>
 
                 <a
-                  href={`https://wa.me/51999999999?text=${buildWhatsAppMessage()}`}
+                  href={`https://wa.me/51986769073?text=${buildWhatsAppMessage()}`}
                   target="_blank"
                   rel="noreferrer"
                   className="flex items-center justify-center gap-2 w-full py-4 rounded-2xl bg-nk-choco hover:bg-nk-gold text-nk-ivory font-semibold text-sm transition-all duration-300"
