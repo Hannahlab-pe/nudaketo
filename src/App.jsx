@@ -1,8 +1,10 @@
-import { useEffect } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { BrowserRouter, Routes, Route, useLocation } from 'react-router-dom'
+import { AnimatePresence } from 'motion/react'
 import Lenis from 'lenis'
 import { CartProvider } from './context/CartContext'
 import CartDrawer from './components/CartDrawer'
+import LoadingScreen from './components/LoadingScreen'
 import Navbar from './components/Navbar'
 import Footer from './components/Footer'
 import HomePage from './pages/HomePage'
@@ -50,9 +52,15 @@ function Layout() {
 }
 
 export default function App() {
+  const [loading, setLoading] = useState(true)
+  const handleDone = useCallback(() => setLoading(false), [])
+
   return (
     <BrowserRouter>
       <CartProvider>
+        <AnimatePresence>
+          {loading && <LoadingScreen key="loader" onDone={handleDone} />}
+        </AnimatePresence>
         <Layout />
       </CartProvider>
     </BrowserRouter>
