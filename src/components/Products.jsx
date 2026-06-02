@@ -4,29 +4,21 @@ import { motion, useInView } from 'motion/react'
 import { products } from '../data/products'
 import { useCart } from '../context/CartContext'
 
-function IconCart() {
-  return (
-    <svg viewBox="0 0 24 24" className="w-4 h-4 fill-none stroke-current stroke-2 shrink-0">
-      <path strokeLinecap="round" strokeLinejoin="round" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"/>
-    </svg>
-  )
-}
-
-function IconCheck() {
-  return (
-    <svg viewBox="0 0 24 24" className="w-4 h-4 fill-none stroke-current stroke-2 shrink-0">
-      <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7"/>
-    </svg>
-  )
-}
-
-function IconArrow() {
-  return (
-    <svg viewBox="0 0 24 24" className="w-4 h-4 fill-none stroke-current stroke-2">
-      <path strokeLinecap="round" strokeLinejoin="round" d="M17 8l4 4m0 0l-4 4m4-4H3"/>
-    </svg>
-  )
-}
+const IconCart = () => (
+  <svg viewBox="0 0 24 24" className="w-4 h-4 fill-none stroke-current stroke-2 shrink-0">
+    <path strokeLinecap="round" strokeLinejoin="round" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"/>
+  </svg>
+)
+const IconCheck = () => (
+  <svg viewBox="0 0 24 24" className="w-4 h-4 fill-none stroke-current stroke-2 shrink-0">
+    <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7"/>
+  </svg>
+)
+const IconArrow = () => (
+  <svg viewBox="0 0 24 24" className="w-4 h-4 fill-none stroke-current stroke-2 shrink-0">
+    <path strokeLinecap="round" strokeLinejoin="round" d="M17 8l4 4m0 0l-4 4m4-4H3"/>
+  </svg>
+)
 
 function ProductCard({ product, index }) {
   const ref = useRef(null)
@@ -56,45 +48,46 @@ function ProductCard({ product, index }) {
       ref={ref}
       initial={{ y: 50, opacity: 0 }}
       animate={inView ? { y: 0, opacity: 1 } : {}}
-      transition={{ duration: 0.7, delay: index * 0.15, ease: [0.22, 1, 0.36, 1] }}
-      className={`relative group rounded-3xl overflow-hidden border border-nk-arena hover:border-nk-gold/50 transition-all duration-500 hover:shadow-[0_16px_50px_rgba(75,53,39,0.12)] ${product.cardBg} flex flex-col`}
+      transition={{ duration: 0.7, delay: index * 0.1, ease: [0.22, 1, 0.36, 1] }}
+      className={`relative group rounded-2xl sm:rounded-3xl overflow-hidden border border-nk-arena hover:border-nk-gold/50 transition-all duration-500 hover:shadow-[0_16px_50px_rgba(75,53,39,0.12)] ${product.cardBg} flex flex-col`}
     >
       {product.badge && (
-        <div className="absolute top-4 right-4 z-10 text-[10px] font-black px-3 py-1.5 rounded-full bg-nk-choco text-nk-ivory"
+        <div className="absolute top-3 right-3 z-10 text-[10px] font-black px-2.5 py-1.5 rounded-full bg-nk-choco text-nk-ivory"
           style={{ fontFamily: "'DM Mono', monospace" }}>
           {product.badge}
         </div>
       )}
 
-      <div className="p-7 flex flex-col gap-5 flex-1">
-        {/* Icono de producto — inicial estilizada */}
-        <div className="w-14 h-14 rounded-2xl flex items-center justify-center bg-nk-arena/40 border border-nk-arena/60 transition-transform duration-500 group-hover:scale-105">
-          <span style={{ fontFamily: "'Playfair Display', serif" }} className={`text-2xl font-black ${product.accentClass}`}>
-            {product.name.charAt(0)}
-          </span>
-        </div>
+      {/* Imagen real del producto */}
+      <Link to={`/producto/${product.slug}`} className="block overflow-hidden aspect-4/3">
+        <img
+          src={product.image}
+          alt={product.name}
+          className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+          loading="lazy"
+        />
+      </Link>
 
+      <div className="p-5 sm:p-6 flex flex-col gap-4 flex-1">
         {/* Encabezado */}
         <div>
-          <p className={`text-xs tracking-[3px] mb-2 ${product.accentClass}`} style={{ fontFamily: "'DM Mono', monospace" }}>
+          <p className={`text-[10px] tracking-[3px] mb-1.5 ${product.accentClass}`} style={{ fontFamily: "'DM Mono', monospace" }}>
             {product.tagline}
           </p>
-          <h3 className="text-xl lg:text-2xl font-bold text-nk-choco leading-snug" style={{ fontFamily: "'Playfair Display', serif" }}>
+          <h3 className="text-lg sm:text-xl font-bold text-nk-choco leading-snug" style={{ fontFamily: "'Playfair Display', serif" }}>
             {product.name}
           </h3>
         </div>
 
-        <p className="text-nk-muted text-sm leading-relaxed">{product.shortDesc}</p>
+        <p className="text-nk-muted text-xs sm:text-sm leading-relaxed">{product.shortDesc}</p>
 
         {/* Highlights */}
         <ul className="flex flex-col gap-1.5">
-          {product.highlights.slice(0, 4).map((h) => (
-            <li key={h} className="flex items-center gap-2 text-nk-muted text-sm">
-              <span className={`${product.accentClass} shrink-0`}>
-                <svg viewBox="0 0 24 24" className="w-3.5 h-3.5 fill-none stroke-current stroke-2">
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7"/>
-                </svg>
-              </span>
+          {product.highlights.slice(0, 3).map((h) => (
+            <li key={h} className="flex items-center gap-2 text-nk-muted text-xs sm:text-sm">
+              <svg viewBox="0 0 24 24" className={`w-3 h-3 fill-none stroke-current stroke-2 shrink-0 ${product.accentClass}`}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7"/>
+              </svg>
               {h}
             </li>
           ))}
@@ -104,14 +97,14 @@ function ProductCard({ product, index }) {
         <div className="w-full h-px bg-nk-arena/60" />
 
         {/* Precios */}
-        <div className="flex flex-wrap gap-3">
+        <div className="flex flex-wrap gap-2">
           {product.sizes.map((s) => (
-            <div key={s.id} className="flex-1 min-w-27.5 rounded-2xl border border-nk-arena p-3.5 flex flex-col gap-0.5 hover:border-nk-gold/50 transition-colors bg-nk-ivory/60">
-              <span className={`text-[10px] tracking-[2px] ${product.accentClass}`} style={{ fontFamily: "'DM Mono', monospace" }}>
+            <div key={s.id} className="flex-1 min-w-24 rounded-xl border border-nk-arena p-3 flex flex-col gap-0.5 bg-nk-ivory/60">
+              <span className={`text-[9px] tracking-[2px] ${product.accentClass}`} style={{ fontFamily: "'DM Mono', monospace" }}>
                 {s.label}
               </span>
-              <span className="text-nk-muted text-xs">{s.pieces}</span>
-              <span className="text-nk-choco text-xl font-black mt-1" style={{ fontFamily: "'Playfair Display', serif" }}>
+              <span className="text-nk-muted text-[10px]">{s.pieces}</span>
+              <span className="text-nk-choco text-lg font-black mt-0.5" style={{ fontFamily: "'Playfair Display', serif" }}>
                 S/{s.price.toFixed(2)}
               </span>
             </div>
@@ -148,16 +141,16 @@ export default function Products() {
   const inView = useInView(titleRef, { once: true, margin: '-80px' })
 
   return (
-    <section id="productos" className="py-24 lg:py-32 bg-nk-ivory">
-      <div className="max-w-7xl mx-auto px-6 lg:px-10">
+    <section id="productos" className="py-16 sm:py-24 lg:py-32 bg-nk-ivory">
+      <div className="max-w-7xl mx-auto px-5 sm:px-6 lg:px-10">
 
-        <div ref={titleRef} className="mb-14 flex flex-col lg:flex-row lg:items-end justify-between gap-6">
+        <div ref={titleRef} className="mb-10 sm:mb-14 flex flex-col lg:flex-row lg:items-end justify-between gap-4 sm:gap-6">
           <div>
             <motion.p
               initial={{ opacity: 0, y: 20 }}
               animate={inView ? { opacity: 1, y: 0 } : {}}
               transition={{ duration: 0.6 }}
-              className="text-nk-gold text-xs tracking-[4px] mb-3"
+              className="text-nk-gold text-[10px] sm:text-xs tracking-[4px] mb-2 sm:mb-3"
               style={{ fontFamily: "'DM Mono', monospace" }}
             >
               CATÁLOGO
@@ -166,7 +159,7 @@ export default function Products() {
               initial={{ opacity: 0, y: 30 }}
               animate={inView ? { opacity: 1, y: 0 } : {}}
               transition={{ duration: 0.7, delay: 0.1 }}
-              className="text-4xl lg:text-6xl font-black text-nk-choco leading-none"
+              className="text-3xl sm:text-4xl lg:text-6xl font-black text-nk-choco leading-none"
               style={{ fontFamily: "'Playfair Display', serif" }}
             >
               Nuestros
@@ -180,11 +173,11 @@ export default function Products() {
             transition={{ duration: 0.6, delay: 0.2 }}
             className="text-nk-muted text-sm max-w-xs leading-relaxed"
           >
-            Cada producto elaborado con ingredientes cuidadosamente seleccionados.
+            Cinco opciones únicas. Todos sin azúcar añadida, gluten free y con ingredientes reales.
           </motion.p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5">
           {products.map((product, i) => (
             <ProductCard key={product.id} product={product} index={i} />
           ))}

@@ -15,24 +15,14 @@ export default function Hero() {
       <div className="absolute inset-0 pointer-events-none">
         <div className="absolute top-1/3 left-1/4 w-64 sm:w-[500px] h-64 sm:h-[500px] rounded-full bg-nk-gold/10 blur-[80px] sm:blur-[120px]" />
         <div className="absolute bottom-1/4 right-1/4 w-48 sm:w-[350px] h-48 sm:h-[350px] rounded-full bg-nk-olive/8 blur-[60px] sm:blur-[100px]" />
-        <div className="absolute top-1/4 right-1/3 w-40 sm:w-[300px] h-40 sm:h-[300px] rounded-full bg-nk-arena/50 blur-[50px] sm:blur-[80px]" />
       </div>
 
-      {/* Asteriscos decorativos — solo desktop */}
+      {/* Asterisco decorativo desktop */}
       <motion.div
         initial={{ opacity: 0, rotate: -30, scale: 0.5 }}
         animate={{ opacity: 1, rotate: 0, scale: 1 }}
         transition={{ duration: 1.2, delay: 0.8, ease: [0.22, 1, 0.36, 1] }}
-        className="hidden lg:block absolute top-28 right-24 text-nk-gold/18 text-[120px] select-none pointer-events-none"
-        style={{ fontFamily: 'serif' }}
-      >
-        ✦
-      </motion.div>
-      <motion.div
-        initial={{ opacity: 0, scale: 0.5 }}
-        animate={{ opacity: 1, scale: 1 }}
-        transition={{ duration: 1, delay: 1.1 }}
-        className="hidden lg:block absolute bottom-32 left-10 text-nk-olive/18 text-5xl select-none pointer-events-none"
+        className="hidden lg:block absolute top-28 right-24 text-nk-gold/15 text-[120px] select-none pointer-events-none"
         style={{ fontFamily: 'serif' }}
       >
         ✦
@@ -40,9 +30,8 @@ export default function Hero() {
 
       <div className="max-w-7xl mx-auto px-5 sm:px-6 lg:px-10 pt-28 pb-16 lg:py-32 grid lg:grid-cols-2 gap-10 lg:gap-16 items-center w-full">
 
-        {/* Columna izquierda */}
+        {/* Texto */}
         <div className="flex flex-col gap-5 lg:gap-8">
-
           <motion.div {...fadeUp(0.1)}>
             <span
               className="inline-flex items-center gap-2 border border-nk-gold/50 text-nk-gold text-[10px] sm:text-xs tracking-[2px] sm:tracking-[3px] px-3 sm:px-4 py-1.5 sm:py-2 rounded-full bg-nk-gold/5"
@@ -53,11 +42,7 @@ export default function Hero() {
             </span>
           </motion.div>
 
-          <motion.h1
-            {...fadeUp(0.2)}
-            className="leading-none"
-            style={{ fontFamily: "'Playfair Display', serif" }}
-          >
+          <motion.h1 {...fadeUp(0.2)} className="leading-none" style={{ fontFamily: "'Playfair Display', serif" }}>
             <span className="block text-[clamp(40px,9vw,96px)] font-black text-nk-choco">Comer</span>
             <span className="block text-[clamp(40px,9vw,96px)] font-black italic text-nk-gold">sano</span>
             <span className="block text-[clamp(40px,9vw,96px)] font-black text-nk-choco">es elegir</span>
@@ -102,65 +87,55 @@ export default function Hero() {
           </motion.div>
         </div>
 
-        {/* Mockup packaging — visible solo en sm+ */}
+        {/* Imagen real del producto hero */}
         <motion.div
           initial={{ x: 60, opacity: 0 }}
           animate={{ x: 0, opacity: 1 }}
           transition={{ duration: 1, delay: 0.3, ease: [0.22, 1, 0.36, 1] }}
           className="hidden sm:flex relative justify-center items-center"
         >
-          <div className="absolute inset-0 rounded-3xl bg-nk-gold/5 blur-3xl" />
+          {/* Glow detrás */}
+          <div className="absolute inset-8 rounded-3xl bg-nk-gold/12 blur-3xl" />
 
           <motion.div
-            animate={{ y: [0, -12, 0] }}
-            transition={{ duration: 4, repeat: Infinity, ease: 'easeInOut' }}
+            animate={{ y: [0, -10, 0] }}
+            transition={{ duration: 4.5, repeat: Infinity, ease: 'easeInOut' }}
             className="relative w-full max-w-xs lg:max-w-sm"
           >
-            <div className="relative rounded-3xl overflow-hidden shadow-[0_20px_60px_rgba(75,53,39,0.18)] border border-nk-arena">
-              {/* Parte superior */}
-              <div className="bg-gradient-to-b from-[#FEFCF8] to-[#F5EFE3] px-6 lg:px-8 pt-8 lg:pt-10 pb-5 lg:pb-6 flex flex-col items-center gap-3 lg:gap-4">
-                <div className="w-16 lg:w-20 h-16 lg:h-20 rounded-full border-2 border-nk-gold flex flex-col items-center justify-center bg-white shadow-sm">
-                  <span style={{ fontFamily: "'Playfair Display', serif" }} className="font-bold text-nk-choco text-base lg:text-lg leading-none">NUDA</span>
-                  <div className="w-8 lg:w-10 h-px bg-nk-gold my-1" />
-                  <span style={{ fontFamily: "'DM Mono', monospace" }} className="text-nk-gold text-[7px] lg:text-[8px] tracking-[3px]">KETO</span>
-                </div>
+            <img
+              src="/images/chips-almendras-lifestyle.jpg"
+              alt="Galletón Chips Almendras NUDA KETO"
+              className="w-full h-auto rounded-3xl shadow-[0_24px_64px_rgba(75,53,39,0.2)] object-cover"
+              loading="eager"
+            />
 
-                <div className="flex gap-2 lg:gap-3">
-                  {['SIN\nAZÚCAR', 'GLUTEN\nFREE'].map((t) => (
-                    <div key={t} className="w-9 lg:w-10 h-9 lg:h-10 rounded-full border border-nk-choco flex items-center justify-center">
-                      <span className="text-[6px] lg:text-[7px] text-nk-choco text-center leading-tight font-bold whitespace-pre-line" style={{ fontFamily: "'DM Mono', monospace" }}>{t}</span>
-                    </div>
-                  ))}
-                </div>
-
-                <div className="text-center">
-                  <h3 style={{ fontFamily: "'Playfair Display', serif" }} className="text-nk-choco text-lg lg:text-xl font-bold leading-tight">Galletón</h3>
-                  <h3 style={{ fontFamily: "'Playfair Display', serif" }} className="text-nk-choco text-lg lg:text-xl font-bold leading-tight">Chips Almendras</h3>
-                  <p className="text-nk-muted text-[10px] lg:text-xs mt-1.5" style={{ fontFamily: "'DM Mono', monospace" }}>Vainilla real · Textura chewy</p>
-                  <p className="text-nk-muted text-[10px] lg:text-xs" style={{ fontFamily: "'DM Mono', monospace" }}>Proteínas: 6 g por galletón</p>
-                </div>
-
-                <div className="w-14 lg:w-16 h-14 lg:h-16 rounded-full bg-nk-arena/60 border-2 border-nk-arena flex items-center justify-center">
-                  <div className="w-9 h-9 rounded-full bg-gradient-to-br from-nk-arena to-nk-gold/40" />
-                </div>
-
-                <p className="text-nk-muted text-[9px] lg:text-[10px]" style={{ fontFamily: "'DM Mono', monospace" }}>Contenido neto: 135 g</p>
-              </div>
-
-              <div className="bg-gradient-to-r from-[#B89448] via-nk-gold to-[#CEB070] py-3 lg:py-4 px-5 lg:px-6 flex justify-between items-center">
-                <span className="text-nk-ivory text-xs font-bold" style={{ fontFamily: "'DM Mono', monospace" }}>PACK x3</span>
-                <span style={{ fontFamily: "'Playfair Display', serif" }} className="text-nk-ivory text-lg lg:text-xl font-black">S/25.00</span>
-              </div>
-            </div>
-
+            {/* Badge flotante */}
             <motion.div
               initial={{ scale: 0, rotate: -10 }}
-              animate={{ scale: 1, rotate: -8 }}
+              animate={{ scale: 1, rotate: -6 }}
               transition={{ duration: 0.5, delay: 1.2, ease: [0.22, 1, 0.36, 1] }}
-              className="absolute -top-3 -right-3 bg-nk-choco text-nk-ivory text-[10px] font-black px-2.5 py-1.5 rounded-full shadow-lg"
+              className="absolute -top-3 -right-3 bg-nk-choco text-nk-ivory text-[10px] font-black px-3 py-1.5 rounded-full shadow-lg"
               style={{ fontFamily: "'DM Mono', monospace" }}
             >
               MÁS VENDIDO
+            </motion.div>
+
+            {/* Badge inferior */}
+            <motion.div
+              initial={{ scale: 0 }}
+              animate={{ scale: 1 }}
+              transition={{ duration: 0.5, delay: 1.5, ease: [0.22, 1, 0.36, 1] }}
+              className="absolute -bottom-4 left-1/2 -translate-x-1/2 bg-white border border-nk-arena shadow-lg rounded-2xl px-4 py-2.5 flex items-center gap-3 whitespace-nowrap"
+            >
+              <div className="flex flex-col">
+                <span style={{ fontFamily: "'DM Mono', monospace" }} className="text-nk-gold text-[9px] tracking-wider">PACK x3</span>
+                <span style={{ fontFamily: "'Playfair Display', serif" }} className="text-nk-choco font-black text-lg leading-none">S/25.00</span>
+              </div>
+              <div className="w-px h-8 bg-nk-arena" />
+              <div className="flex flex-col">
+                <span style={{ fontFamily: "'DM Mono', monospace" }} className="text-nk-gold text-[9px] tracking-wider">INDIVIDUAL</span>
+                <span style={{ fontFamily: "'Playfair Display', serif" }} className="text-nk-choco font-black text-lg leading-none">S/8.50</span>
+              </div>
             </motion.div>
           </motion.div>
         </motion.div>
@@ -177,7 +152,7 @@ export default function Hero() {
         <motion.div
           animate={{ y: [0, 8, 0] }}
           transition={{ duration: 1.5, repeat: Infinity }}
-          className="w-px h-6 bg-gradient-to-b from-nk-gold/60 to-transparent"
+          className="w-px h-6 bg-linear-to-b from-nk-gold/60 to-transparent"
         />
       </motion.div>
     </section>

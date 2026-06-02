@@ -28,33 +28,29 @@ export default function ProductPage() {
   const [selectedSize, setSelectedSize] = useState(product?.sizes[0] ?? null)
   const [qty, setQty] = useState(1)
   const [added, setAdded] = useState(false)
+  const [activeImg, setActiveImg] = useState('detail')
 
   if (!product) {
     return (
       <div className="min-h-screen bg-nk-ivory flex items-center justify-center flex-col gap-4 px-5">
-        <p style={{ fontFamily: "'Playfair Display', serif" }} className="text-nk-choco text-xl font-bold text-center">
-          Producto no encontrado
-        </p>
+        <p style={{ fontFamily: "'Playfair Display', serif" }} className="text-nk-choco text-xl font-bold text-center">Producto no encontrado</p>
         <Link to="/" className="text-nk-gold underline text-sm">Volver al inicio</Link>
       </div>
     )
   }
 
   const handleAddToCart = () => {
-    addItem({
-      id: product.id,
-      sizeId: selectedSize.id,
-      name: product.name,
-      sizeLabel: selectedSize.label,
-      size: selectedSize.size,
-      price: selectedSize.price,
-      qty,
-    })
+    addItem({ id: product.id, sizeId: selectedSize.id, name: product.name, sizeLabel: selectedSize.label, size: selectedSize.size, price: selectedSize.price, qty })
     setAdded(true)
     setTimeout(() => setAdded(false), 2000)
   }
 
-  const related = products.filter((p) => p.id !== product.id)
+  const images = [
+    { key: 'detail', src: product.imageDetail, label: 'Detalle' },
+    { key: 'main', src: product.image, label: 'Lifestyle' },
+  ]
+
+  const related = products.filter((p) => p.id !== product.id).slice(0, 2)
 
   return (
     <div className="min-h-screen bg-nk-ivory">
@@ -74,52 +70,51 @@ export default function ProductPage() {
 
         <div className="grid lg:grid-cols-2 gap-8 sm:gap-14 lg:gap-20">
 
-          {/* Imagen */}
+          {/* Galería de imágenes */}
           <motion.div
             initial={{ opacity: 0, x: -40 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
-            className="relative"
+            className="flex flex-col gap-3"
           >
-            <div className="aspect-square rounded-2xl sm:rounded-3xl overflow-hidden border border-nk-arena bg-linear-to-br from-[#FEFCF8] to-[#F0E8D8] flex flex-col items-center justify-center gap-4 sm:gap-6 shadow-[0_8px_40px_rgba(75,53,39,0.1)]">
-              <div className="w-28 sm:w-40 h-28 sm:h-40 rounded-full border-2 border-nk-gold flex flex-col items-center justify-center bg-white shadow-md">
-                <span style={{ fontFamily: "'Playfair Display', serif" }} className="font-bold text-nk-choco text-lg sm:text-2xl leading-none">NUDA</span>
-                <div className="w-10 sm:w-14 h-px bg-nk-gold my-1" />
-                <span style={{ fontFamily: "'DM Mono', monospace" }} className="text-nk-gold text-[8px] sm:text-[10px] tracking-[4px]">KETO</span>
-              </div>
-
-              <div className="text-center px-4 sm:px-8">
-                <p style={{ fontFamily: "'Playfair Display', serif" }} className="text-nk-choco text-base sm:text-xl font-bold leading-snug">
-                  {product.name}
-                </p>
-                <p style={{ fontFamily: "'DM Mono', monospace" }} className="text-nk-muted text-[10px] sm:text-xs mt-1.5 tracking-wider">
-                  {selectedSize?.size} · {selectedSize?.pieces}
-                </p>
-              </div>
-
-              <div className="flex flex-wrap gap-2 justify-center px-4">
-                {['SIN AZÚCAR', 'GLUTEN FREE', 'KETO'].map((b) => (
-                  <span key={b} style={{ fontFamily: "'DM Mono', monospace" }} className="border border-nk-choco text-nk-choco text-[7px] sm:text-[8px] tracking-[1px] px-2 py-1 rounded-full">
-                    {b}
-                  </span>
-                ))}
-              </div>
+            {/* Imagen principal */}
+            <div className="relative rounded-2xl sm:rounded-3xl overflow-hidden border border-nk-arena shadow-[0_8px_40px_rgba(75,53,39,0.1)] aspect-square bg-nk-ivory2">
+              <img
+                src={images.find(i => i.key === activeImg)?.src}
+                alt={product.name}
+                className="w-full h-full object-cover"
+                loading="eager"
+              />
+              {product.badge && (
+                <div className="absolute top-4 left-4 bg-nk-choco text-nk-ivory text-[10px] font-black px-3 py-1.5 rounded-full"
+                  style={{ fontFamily: "'DM Mono', monospace" }}>
+                  {product.badge}
+                </div>
+              )}
             </div>
 
-            {product.badge && (
-              <div className="absolute top-4 left-4 bg-nk-choco text-nk-ivory text-[10px] font-black px-3 py-1.5 rounded-full"
-                style={{ fontFamily: "'DM Mono', monospace" }}>
-                {product.badge}
-              </div>
-            )}
+            {/* Miniaturas */}
+            <div className="flex gap-3">
+              {images.map((img) => (
+                <button
+                  key={img.key}
+                  onClick={() => setActiveImg(img.key)}
+                  className={`w-20 h-20 rounded-xl overflow-hidden border-2 transition-all duration-200 ${
+                    activeImg === img.key ? 'border-nk-gold shadow-[0_0_0_2px_rgba(194,164,94,0.3)]' : 'border-nk-arena hover:border-nk-gold/50'
+                  }`}
+                >
+                  <img src={img.src} alt={img.label} className="w-full h-full object-cover" loading="lazy" />
+                </button>
+              ))}
+            </div>
           </motion.div>
 
-          {/* Info */}
+          {/* Info del producto */}
           <motion.div
             initial={{ opacity: 0, x: 40 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.7, delay: 0.1, ease: [0.22, 1, 0.36, 1] }}
-            className="flex flex-col gap-5 sm:gap-7"
+            className="flex flex-col gap-5 sm:gap-6"
           >
             <div>
               <p style={{ fontFamily: "'DM Mono', monospace" }} className={`text-[10px] sm:text-xs tracking-[3px] mb-2 ${product.accentClass}`}>
@@ -142,17 +137,15 @@ export default function ProductPage() {
                   <button
                     key={s.id}
                     onClick={() => setSelectedSize(s)}
-                    className={`flex-1 rounded-xl sm:rounded-2xl border-2 p-3 sm:p-4 text-left transition-all duration-200 ${
-                      selectedSize?.id === s.id
-                        ? 'border-nk-gold bg-nk-gold/5'
-                        : 'border-nk-arena hover:border-nk-gold/50 bg-white'
+                    className={`flex-1 rounded-xl border-2 p-3 sm:p-4 text-left transition-all duration-200 ${
+                      selectedSize?.id === s.id ? 'border-nk-gold bg-nk-gold/5' : 'border-nk-arena hover:border-nk-gold/50 bg-white'
                     }`}
                   >
                     <span style={{ fontFamily: "'DM Mono', monospace" }} className={`text-[9px] sm:text-[10px] tracking-[2px] ${selectedSize?.id === s.id ? 'text-nk-gold' : 'text-nk-muted'}`}>
                       {s.label}
                     </span>
                     <p className="text-nk-muted text-xs mt-0.5">{s.pieces} · {s.size}</p>
-                    <p style={{ fontFamily: "'Playfair Display', serif" }} className="text-nk-choco text-lg sm:text-xl font-black mt-1">
+                    <p style={{ fontFamily: "'Playfair Display', serif" }} className="text-nk-choco text-xl font-black mt-1">
                       S/{s.price.toFixed(2)}
                     </p>
                   </button>
@@ -162,37 +155,42 @@ export default function ProductPage() {
 
             {/* Cantidad + Agregar */}
             <div className="flex gap-3">
-              <div className="flex items-center gap-2 sm:gap-3 border-2 border-nk-arena rounded-xl sm:rounded-2xl px-3 sm:px-4 py-3 shrink-0">
-                <button
-                  onClick={() => setQty(Math.max(1, qty - 1))}
-                  className="text-nk-muted hover:text-nk-choco transition-colors w-5 h-5 flex items-center justify-center"
-                >
+              <div className="flex items-center gap-2 border-2 border-nk-arena rounded-xl px-3 py-3 shrink-0">
+                <button onClick={() => setQty(Math.max(1, qty - 1))} className="text-nk-muted hover:text-nk-choco w-5 h-5 flex items-center justify-center">
                   <svg viewBox="0 0 24 24" className="w-4 h-4 fill-none stroke-current stroke-2"><path strokeLinecap="round" d="M5 12h14"/></svg>
                 </button>
-                <span style={{ fontFamily: "'Playfair Display', serif" }} className="text-nk-choco font-bold text-lg w-5 text-center">{qty}</span>
-                <button
-                  onClick={() => setQty(qty + 1)}
-                  className="text-nk-muted hover:text-nk-choco transition-colors w-5 h-5 flex items-center justify-center"
-                >
+                <span style={{ fontFamily: "'Playfair Display', serif" }} className="text-nk-choco font-bold text-lg w-6 text-center">{qty}</span>
+                <button onClick={() => setQty(qty + 1)} className="text-nk-muted hover:text-nk-choco w-5 h-5 flex items-center justify-center">
                   <svg viewBox="0 0 24 24" className="w-4 h-4 fill-none stroke-current stroke-2"><path strokeLinecap="round" d="M12 5v14M5 12h14"/></svg>
                 </button>
               </div>
 
               <button
                 onClick={handleAddToCart}
-                className={`flex-1 flex items-center justify-center gap-2 py-3 sm:py-4 rounded-xl sm:rounded-2xl font-semibold text-sm transition-all duration-300 hover:scale-[1.02] active:scale-[0.98] ${
+                className={`flex-1 flex items-center justify-center gap-2 py-3 rounded-xl font-semibold text-sm transition-all duration-300 hover:scale-[1.02] active:scale-[0.98] ${
                   added ? 'bg-nk-olive text-nk-ivory' : 'bg-nk-choco hover:bg-nk-gold text-nk-ivory'
                 }`}
               >
-                {added ? <><IconCheck />Agregado</> : <><IconCart />Agregar — S/{(selectedSize?.price * qty).toFixed(2)}</>}
+                {added ? <><IconCheck />Agregado al carrito</> : <><IconCart />Agregar — S/{(selectedSize?.price * qty).toFixed(2)}</>}
               </button>
             </div>
 
+            {/* WhatsApp directo */}
+            <a
+              href={`https://wa.me/51999999999?text=Hola!%20Quiero%20pedir%20${encodeURIComponent(product.name)}%20(${encodeURIComponent(selectedSize?.label ?? '')}%20${encodeURIComponent(selectedSize?.size ?? '')})`}
+              target="_blank"
+              rel="noreferrer"
+              className="flex items-center justify-center gap-2 border-2 border-nk-choco/20 hover:border-nk-gold text-nk-muted hover:text-nk-choco py-3 rounded-xl text-sm font-medium transition-all duration-200"
+            >
+              <svg viewBox="0 0 24 24" className="w-4 h-4 fill-current shrink-0 text-green-600">
+                <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/>
+              </svg>
+              Pedir directamente por WhatsApp
+            </a>
+
             {/* Highlights */}
-            <div className="border-t border-nk-arena pt-5 sm:pt-6">
-              <p style={{ fontFamily: "'DM Mono', monospace" }} className="text-nk-muted text-[10px] sm:text-xs tracking-[3px] mb-3 sm:mb-4">
-                CARACTERÍSTICAS
-              </p>
+            <div className="border-t border-nk-arena pt-5">
+              <p style={{ fontFamily: "'DM Mono', monospace" }} className="text-nk-muted text-[10px] sm:text-xs tracking-[3px] mb-3 sm:mb-4">CARACTERÍSTICAS</p>
               <ul className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                 {product.highlights.map((h) => (
                   <li key={h} className="flex items-start gap-2 text-nk-muted text-xs sm:text-sm">
@@ -204,14 +202,14 @@ export default function ProductPage() {
             </div>
 
             {/* Info packaging */}
-            <div className="grid grid-cols-3 gap-2 sm:gap-3">
+            <div className="grid grid-cols-3 gap-2">
               {[
                 { label: 'Presentación', value: product.packaging },
                 { label: 'Peso neto', value: product.netWeight },
                 { label: 'Proteína', value: product.protein },
               ].map(({ label, value }) => (
-                <div key={label} className="rounded-lg sm:rounded-xl border border-nk-arena p-2.5 sm:p-3 bg-white text-center">
-                  <p style={{ fontFamily: "'DM Mono', monospace" }} className="text-nk-muted text-[8px] sm:text-[9px] tracking-wider mb-1">{label.toUpperCase()}</p>
+                <div key={label} className="rounded-lg border border-nk-arena p-2.5 bg-white text-center">
+                  <p style={{ fontFamily: "'DM Mono', monospace" }} className="text-nk-muted text-[8px] tracking-wider mb-1">{label.toUpperCase()}</p>
                   <p className="text-nk-choco text-[10px] sm:text-xs font-semibold leading-snug">{value}</p>
                 </div>
               ))}
@@ -220,35 +218,35 @@ export default function ProductPage() {
         </div>
 
         {/* Relacionados */}
-        <div className="mt-14 sm:mt-20">
-          <p style={{ fontFamily: "'DM Mono', monospace" }} className="text-nk-gold text-[10px] sm:text-xs tracking-[4px] mb-2 sm:mb-3">TAMBIÉN TE PUEDE GUSTAR</p>
-          <h2 style={{ fontFamily: "'Playfair Display', serif" }} className="text-2xl sm:text-3xl font-black text-nk-choco mb-6 sm:mb-8">
-            Otros <span className="italic text-nk-gold">productos</span>
-          </h2>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-5">
-            {related.map((p) => (
-              <Link
-                key={p.id}
-                to={`/producto/${p.slug}`}
-                className="flex gap-4 items-center p-4 sm:p-5 rounded-xl sm:rounded-2xl border border-nk-arena bg-white hover:border-nk-gold/40 hover:shadow-[0_4px_20px_rgba(75,53,39,0.08)] transition-all group"
-              >
-                <div className="w-14 sm:w-16 h-14 sm:h-16 rounded-xl bg-nk-arena/30 border border-nk-arena shrink-0 flex items-center justify-center">
-                  <span style={{ fontFamily: "'Playfair Display', serif" }} className="text-nk-gold font-bold text-xl">
-                    {p.name.charAt(0)}
-                  </span>
-                </div>
-                <div className="flex-1 min-w-0">
-                  <p style={{ fontFamily: "'DM Mono', monospace" }} className={`text-[9px] sm:text-[10px] tracking-[2px] ${p.accentClass}`}>{p.tagline}</p>
-                  <p style={{ fontFamily: "'Playfair Display', serif" }} className="text-nk-choco font-bold text-sm sm:text-base leading-snug mt-0.5">{p.name}</p>
-                  <p className="text-nk-gold text-sm font-semibold mt-1">Desde S/{Math.min(...p.sizes.map(s => s.price)).toFixed(2)}</p>
-                </div>
-                <svg viewBox="0 0 24 24" className="w-4 h-4 fill-none stroke-nk-muted stroke-2 shrink-0 group-hover:stroke-nk-gold transition-colors">
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M9 18l6-6-6-6"/>
-                </svg>
-              </Link>
-            ))}
+        {related.length > 0 && (
+          <div className="mt-14 sm:mt-20">
+            <p style={{ fontFamily: "'DM Mono', monospace" }} className="text-nk-gold text-[10px] sm:text-xs tracking-[4px] mb-2 sm:mb-3">TAMBIÉN TE PUEDE GUSTAR</p>
+            <h2 style={{ fontFamily: "'Playfair Display', serif" }} className="text-2xl sm:text-3xl font-black text-nk-choco mb-6 sm:mb-8">
+              Otros <span className="italic text-nk-gold">productos</span>
+            </h2>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-5">
+              {related.map((p) => (
+                <Link
+                  key={p.id}
+                  to={`/producto/${p.slug}`}
+                  className="flex gap-4 items-center p-4 sm:p-5 rounded-2xl border border-nk-arena bg-white hover:border-nk-gold/40 hover:shadow-[0_4px_20px_rgba(75,53,39,0.08)] transition-all group overflow-hidden"
+                >
+                  <div className="w-16 sm:w-20 h-16 sm:h-20 rounded-xl overflow-hidden border border-nk-arena shrink-0">
+                    <img src={p.image} alt={p.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" loading="lazy" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p style={{ fontFamily: "'DM Mono', monospace" }} className={`text-[9px] sm:text-[10px] tracking-[2px] ${p.accentClass}`}>{p.tagline}</p>
+                    <p style={{ fontFamily: "'Playfair Display', serif" }} className="text-nk-choco font-bold text-sm sm:text-base leading-snug mt-0.5">{p.name}</p>
+                    <p className="text-nk-gold text-sm font-semibold mt-1">Desde S/{Math.min(...p.sizes.map(s => s.price)).toFixed(2)}</p>
+                  </div>
+                  <svg viewBox="0 0 24 24" className="w-4 h-4 fill-none stroke-nk-muted stroke-2 shrink-0 group-hover:stroke-nk-gold transition-colors">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M9 18l6-6-6-6"/>
+                  </svg>
+                </Link>
+              ))}
+            </div>
           </div>
-        </div>
+        )}
       </div>
     </div>
   )

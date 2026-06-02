@@ -33,8 +33,10 @@ const legalLinks = [
 
 const productLinks = [
   { label: 'Galletón Chips & Almendras', href: '/producto/galleton-chips-almendras' },
+  { label: 'Galletón Doble Cacao', href: '/producto/galleton-doble-cacao' },
   { label: 'Galletón Vainilla Chips', href: '/producto/galleton-vainilla-chips' },
-  { label: 'Barra Cacao & Avellana', href: '/producto/barra-energetica-cacao-avellana' },
+  { label: 'Barra Cacao Nuts', href: '/producto/barra-cacao-nuts' },
+  { label: 'Keto Bites Almendras & Sal', href: '/producto/keto-bites-almendras-sal' },
 ]
 
 export default function Footer() {
