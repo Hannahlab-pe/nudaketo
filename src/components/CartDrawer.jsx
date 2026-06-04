@@ -1,5 +1,8 @@
+import { useState, useEffect, useCallback } from 'react'
 import { motion, AnimatePresence } from 'motion/react'
 import { useCart } from '../context/CartContext'
+
+const CULQI_KEY = import.meta.env.VITE_CULQI_PUBLIC_KEY || ''
 
 const IconTrash = () => (
   <svg viewBox="0 0 24 24" className="w-4 h-4 fill-none stroke-current stroke-2">
@@ -16,6 +19,12 @@ const IconEmptyCart = () => (
     <path strokeLinecap="round" strokeLinejoin="round" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"/>
   </svg>
 )
+const IconCard = () => (
+  <svg viewBox="0 0 24 24" className="w-4 h-4 fill-none stroke-current stroke-2 shrink-0">
+    <rect x="1" y="4" width="22" height="16" rx="2" ry="2"/>
+    <path d="M1 10h22"/>
+  </svg>
+)
 const WA = () => (
   <svg viewBox="0 0 24 24" className="w-4 h-4 fill-current shrink-0">
     <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/>
@@ -24,6 +33,64 @@ const WA = () => (
 
 export default function CartDrawer() {
   const { items, total, count, isOpen, setIsOpen, removeItem, updateQty, clearCart, buildWhatsAppMessage } = useCart()
+  const [paying, setPaying] = useState(false)
+  const [paymentOk, setPaymentOk] = useState(false)
+
+  // Callback global que Culqi invoca al generar el token
+  const handleCulqiToken = useCallback(() => {
+    if (!window.Culqi) return
+    if (window.Culqi.token) {
+      // Token generado — en producción enviarlo al backend para cobrar
+      const token = window.Culqi.token
+      window.Culqi.close()
+      setPaying(false)
+      setPaymentOk(true)
+      clearCart()
+      // Notificar al equipo por WhatsApp con referencia del token
+      const msg = encodeURIComponent(
+        `Pago procesado con tarjeta:\nToken Culqi: ${token.id}\nEmail: ${token.email}\nTotal: S/${total.toFixed(2)}\n\nProductos:\n` +
+        items.map(i => `• ${i.name} (${i.sizeLabel}) x${i.qty} = S/${(i.price * i.qty).toFixed(2)}`).join('\n')
+      )
+      window.open(`https://wa.me/51986769073?text=${msg}`, '_blank')
+    } else if (window.Culqi.error) {
+      setPaying(false)
+      console.error('Culqi error:', window.Culqi.error)
+    }
+  }, [total, items, clearCart])
+
+  // Registrar el callback global cada vez que cambia
+  useEffect(() => {
+    window.culqi = handleCulqiToken
+    return () => { window.culqi = undefined }
+  }, [handleCulqiToken])
+
+  const handleCulqiPay = () => {
+    if (!window.Culqi) {
+      alert('El sistema de pago no está disponible. Intenta nuevamente o usa WhatsApp.')
+      return
+    }
+    if (!CULQI_KEY) {
+      alert('Clave de Culqi no configurada. Contacta al administrador.')
+      return
+    }
+    setPaying(true)
+    window.Culqi.publicKey = CULQI_KEY
+    window.Culqi.settings({
+      title: 'NUDA KETO',
+      currency: 'PEN',
+      description: `Pedido NUDA KETO (${count} producto${count > 1 ? 's' : ''})`,
+      amount: Math.round(total * 100), // Culqi trabaja en céntimos
+      order: null,
+    })
+    window.Culqi.open()
+    // Si el usuario cierra el modal sin pagar
+    const checkClosed = setInterval(() => {
+      if (!document.querySelector('#culqi-modal')) {
+        setPaying(false)
+        clearInterval(checkClosed)
+      }
+    }, 500)
+  }
 
   return (
     <AnimatePresence>
@@ -53,114 +120,170 @@ export default function CartDrawer() {
                 </p>
               </div>
               <button
-                onClick={() => setIsOpen(false)}
+                onClick={() => { setIsOpen(false); setPaymentOk(false) }}
                 className="w-9 h-9 rounded-full border border-nk-arena flex items-center justify-center text-nk-muted hover:text-nk-choco hover:border-nk-choco transition-colors"
               >
                 <IconClose />
               </button>
             </div>
 
-            {/* Items */}
-            <div className="flex-1 overflow-y-auto px-5 sm:px-6 py-4">
-              {items.length === 0 ? (
-                <div className="flex flex-col items-center justify-center h-full gap-4 text-nk-muted">
-                  <IconEmptyCart />
-                  <p style={{ fontFamily: "'Playfair Display', serif" }} className="text-lg text-nk-choco/50">
-                    Tu carrito está vacío
-                  </p>
-                  <p className="text-sm text-center text-nk-muted">Agrega alguno de nuestros productos.</p>
-                  <button
-                    onClick={() => setIsOpen(false)}
-                    className="mt-2 border border-nk-choco/30 text-nk-choco px-5 py-2 rounded-full text-sm hover:bg-nk-choco hover:text-nk-ivory transition-colors"
-                  >
-                    Ver productos
-                  </button>
+            {/* Pantalla de pago exitoso */}
+            {paymentOk ? (
+              <div className="flex-1 flex flex-col items-center justify-center gap-5 px-6 text-center">
+                <div className="w-16 h-16 rounded-full bg-nk-olive/15 border-2 border-nk-olive flex items-center justify-center">
+                  <svg viewBox="0 0 24 24" className="w-8 h-8 fill-none stroke-nk-olive stroke-2">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7"/>
+                  </svg>
                 </div>
-              ) : (
-                <ul className="flex flex-col gap-3">
-                  <AnimatePresence initial={false}>
-                    {items.map((item) => (
-                      <motion.li
-                        key={item.key}
-                        layout
-                        initial={{ opacity: 0, x: 20 }}
-                        animate={{ opacity: 1, x: 0 }}
-                        exit={{ opacity: 0, x: 20, height: 0 }}
-                        transition={{ duration: 0.25 }}
-                        className="flex gap-3 items-start p-4 rounded-2xl border border-nk-arena bg-white"
-                      >
-                        <div className="w-12 h-12 rounded-xl bg-nk-arena/40 border border-nk-arena shrink-0 flex items-center justify-center">
-                          <span style={{ fontFamily: "'Playfair Display', serif" }} className="text-nk-gold font-bold text-lg">
-                            {item.name.charAt(0)}
-                          </span>
-                        </div>
-
-                        <div className="flex-1 min-w-0">
-                          <p className="text-nk-choco text-sm font-semibold leading-snug" style={{ fontFamily: "'Playfair Display', serif" }}>
-                            {item.name}
-                          </p>
-                          <p style={{ fontFamily: "'DM Mono', monospace" }} className="text-nk-gold text-[10px] tracking-wider mt-0.5">
-                            {item.sizeLabel} · {item.size}
-                          </p>
-
-                          <div className="flex items-center justify-between mt-3 flex-wrap gap-2">
-                            <div className="flex items-center gap-1.5 border border-nk-arena rounded-full px-2 py-1">
-                              <button
-                                onClick={() => item.qty === 1 ? removeItem(item.key) : updateQty(item.key, item.qty - 1)}
-                                className="w-5 h-5 flex items-center justify-center text-nk-muted hover:text-nk-choco"
-                              >
-                                <svg viewBox="0 0 24 24" className="w-3 h-3 fill-none stroke-current stroke-2"><path strokeLinecap="round" d="M5 12h14"/></svg>
-                              </button>
-                              <span className="text-nk-choco text-sm font-semibold w-5 text-center">{item.qty}</span>
-                              <button
-                                onClick={() => updateQty(item.key, item.qty + 1)}
-                                className="w-5 h-5 flex items-center justify-center text-nk-muted hover:text-nk-choco"
-                              >
-                                <svg viewBox="0 0 24 24" className="w-3 h-3 fill-none stroke-current stroke-2"><path strokeLinecap="round" d="M12 5v14M5 12h14"/></svg>
-                              </button>
-                            </div>
-
-                            <div className="flex items-center gap-2">
-                              <span style={{ fontFamily: "'Playfair Display', serif" }} className="text-nk-choco font-bold text-sm">
-                                S/{(item.price * item.qty).toFixed(2)}
-                              </span>
-                              <button onClick={() => removeItem(item.key)} className="text-nk-muted hover:text-red-400 transition-colors">
-                                <IconTrash />
-                              </button>
-                            </div>
-                          </div>
-                        </div>
-                      </motion.li>
-                    ))}
-                  </AnimatePresence>
-                </ul>
-              )}
-            </div>
-
-            {/* Footer */}
-            {items.length > 0 && (
-              <div className="px-5 sm:px-6 py-4 sm:py-5 border-t border-nk-arena bg-white flex flex-col gap-4">
-                <div className="flex justify-between items-center">
-                  <span className="text-nk-muted text-sm">Total</span>
-                  <span style={{ fontFamily: "'Playfair Display', serif" }} className="text-2xl font-black text-nk-choco">
-                    S/{total.toFixed(2)}
-                  </span>
-                </div>
-
-                <a
-                  href={`https://wa.me/51986769073?text=${buildWhatsAppMessage()}`}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="flex items-center justify-center gap-2 w-full py-4 rounded-2xl bg-nk-choco hover:bg-nk-gold text-nk-ivory font-semibold text-sm transition-all duration-300"
+                <h3 style={{ fontFamily: "'Playfair Display', serif" }} className="text-2xl font-bold text-nk-choco">
+                  ¡Pago recibido!
+                </h3>
+                <p className="text-nk-muted text-sm leading-relaxed">
+                  Tu pedido fue procesado correctamente. Te contactaremos pronto para coordinar la entrega.
+                </p>
+                <button
+                  onClick={() => { setPaymentOk(false); setIsOpen(false) }}
+                  className="bg-nk-choco text-nk-ivory px-6 py-3 rounded-full text-sm font-semibold hover:bg-nk-gold transition-colors"
                 >
-                  <WA />
-                  Confirmar pedido por WhatsApp
-                </a>
-
-                <button onClick={clearCart} className="text-nk-muted text-xs text-center hover:text-nk-choco transition-colors">
-                  Vaciar carrito
+                  Volver al inicio
                 </button>
               </div>
+            ) : (
+              <>
+                {/* Items */}
+                <div className="flex-1 overflow-y-auto px-5 sm:px-6 py-4">
+                  {items.length === 0 ? (
+                    <div className="flex flex-col items-center justify-center h-full gap-4 text-nk-muted">
+                      <IconEmptyCart />
+                      <p style={{ fontFamily: "'Playfair Display', serif" }} className="text-lg text-nk-choco/50">
+                        Tu carrito está vacío
+                      </p>
+                      <p className="text-sm text-center">Agrega alguno de nuestros productos.</p>
+                      <button
+                        onClick={() => setIsOpen(false)}
+                        className="mt-2 border border-nk-choco/30 text-nk-choco px-5 py-2 rounded-full text-sm hover:bg-nk-choco hover:text-nk-ivory transition-colors"
+                      >
+                        Ver productos
+                      </button>
+                    </div>
+                  ) : (
+                    <ul className="flex flex-col gap-3">
+                      <AnimatePresence initial={false}>
+                        {items.map((item) => (
+                          <motion.li
+                            key={item.key}
+                            layout
+                            initial={{ opacity: 0, x: 20 }}
+                            animate={{ opacity: 1, x: 0 }}
+                            exit={{ opacity: 0, x: 20, height: 0 }}
+                            transition={{ duration: 0.25 }}
+                            className="flex gap-3 items-start p-4 rounded-2xl border border-nk-arena bg-white"
+                          >
+                            <div className="w-12 h-12 rounded-xl bg-nk-arena/40 border border-nk-arena shrink-0 flex items-center justify-center">
+                              <span style={{ fontFamily: "'Playfair Display', serif" }} className="text-nk-gold font-bold text-lg">
+                                {item.name.charAt(0)}
+                              </span>
+                            </div>
+
+                            <div className="flex-1 min-w-0">
+                              <p className="text-nk-choco text-sm font-semibold leading-snug" style={{ fontFamily: "'Playfair Display', serif" }}>
+                                {item.name}
+                              </p>
+                              <p style={{ fontFamily: "'DM Mono', monospace" }} className="text-nk-gold text-[10px] tracking-wider mt-0.5">
+                                {item.sizeLabel} · {item.size}
+                              </p>
+
+                              <div className="flex items-center justify-between mt-3 flex-wrap gap-2">
+                                <div className="flex items-center gap-1.5 border border-nk-arena rounded-full px-2 py-1">
+                                  <button
+                                    onClick={() => item.qty === 1 ? removeItem(item.key) : updateQty(item.key, item.qty - 1)}
+                                    className="w-5 h-5 flex items-center justify-center text-nk-muted hover:text-nk-choco"
+                                  >
+                                    <svg viewBox="0 0 24 24" className="w-3 h-3 fill-none stroke-current stroke-2"><path strokeLinecap="round" d="M5 12h14"/></svg>
+                                  </button>
+                                  <span className="text-nk-choco text-sm font-semibold w-5 text-center">{item.qty}</span>
+                                  <button
+                                    onClick={() => updateQty(item.key, item.qty + 1)}
+                                    className="w-5 h-5 flex items-center justify-center text-nk-muted hover:text-nk-choco"
+                                  >
+                                    <svg viewBox="0 0 24 24" className="w-3 h-3 fill-none stroke-current stroke-2"><path strokeLinecap="round" d="M12 5v14M5 12h14"/></svg>
+                                  </button>
+                                </div>
+
+                                <div className="flex items-center gap-2">
+                                  <span style={{ fontFamily: "'Playfair Display', serif" }} className="text-nk-choco font-bold text-sm">
+                                    S/{(item.price * item.qty).toFixed(2)}
+                                  </span>
+                                  <button onClick={() => removeItem(item.key)} className="text-nk-muted hover:text-red-400 transition-colors">
+                                    <IconTrash />
+                                  </button>
+                                </div>
+                              </div>
+                            </div>
+                          </motion.li>
+                        ))}
+                      </AnimatePresence>
+                    </ul>
+                  )}
+                </div>
+
+                {/* Footer con botones de pago */}
+                {items.length > 0 && (
+                  <div className="px-5 sm:px-6 py-4 sm:py-5 border-t border-nk-arena bg-white flex flex-col gap-3">
+                    {/* Total */}
+                    <div className="flex justify-between items-center">
+                      <span className="text-nk-muted text-sm">Total</span>
+                      <span style={{ fontFamily: "'Playfair Display', serif" }} className="text-2xl font-black text-nk-choco">
+                        S/{total.toFixed(2)}
+                      </span>
+                    </div>
+
+                    {/* Separador visual */}
+                    <div className="flex items-center gap-3">
+                      <div className="flex-1 h-px bg-nk-arena" />
+                      <span style={{ fontFamily: "'DM Mono', monospace" }} className="text-nk-muted text-[10px] tracking-wider">MÉTODOS DE PAGO</span>
+                      <div className="flex-1 h-px bg-nk-arena" />
+                    </div>
+
+                    {/* Botón principal: Culqi (tarjeta) */}
+                    <button
+                      onClick={handleCulqiPay}
+                      disabled={paying}
+                      className="flex items-center justify-center gap-2 w-full py-4 rounded-2xl bg-nk-choco hover:bg-nk-gold text-nk-ivory font-semibold text-sm transition-all duration-300 disabled:opacity-60 disabled:cursor-not-allowed"
+                    >
+                      {paying ? (
+                        <>
+                          <svg className="w-4 h-4 animate-spin" viewBox="0 0 24 24" fill="none">
+                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/>
+                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"/>
+                          </svg>
+                          Abriendo pago...
+                        </>
+                      ) : (
+                        <>
+                          <IconCard />
+                          Pagar con tarjeta
+                        </>
+                      )}
+                    </button>
+
+                    {/* Alternativa: WhatsApp */}
+                    <a
+                      href={`https://wa.me/51986769073?text=${buildWhatsAppMessage()}`}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="flex items-center justify-center gap-2 w-full py-3.5 rounded-2xl border-2 border-nk-arena hover:border-nk-choco text-nk-muted hover:text-nk-choco font-medium text-sm transition-all duration-200"
+                    >
+                      <WA />
+                      Pedir por WhatsApp
+                    </a>
+
+                    <button onClick={clearCart} className="text-nk-muted text-xs text-center hover:text-nk-choco transition-colors">
+                      Vaciar carrito
+                    </button>
+                  </div>
+                )}
+              </>
             )}
           </motion.aside>
         </>
