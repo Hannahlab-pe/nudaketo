@@ -11,6 +11,9 @@
   --color-nk-muted:   #9A8878;
 }
 
+
+
+
 *, *::before, *::after { box-sizing: border-box; }
 
 html { scroll-behavior: smooth; }
@@ -39,3 +42,7 @@ body {
 ::-webkit-scrollbar { width: 4px; }
 ::-webkit-scrollbar-track { background: #F3EDDD; }
 ::-webkit-scrollbar-thumb { background: #C2A45E; border-radius: 2px; }
+
+/* Ocultar scrollbar en carruseles horizontales */
+.no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+.no-scrollbar::-webkit-scrollbar { display: none; }

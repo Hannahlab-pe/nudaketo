@@ -30,8 +30,8 @@ export default function Testimonials() {
   const inView = useInView(ref, { once: true, margin: '-80px' })
 
   return (
-    <section className="py-16 sm:py-24 lg:py-32 bg-nk-ivory2">
-      <div className="max-w-7xl mx-auto px-5 sm:px-6 lg:px-10">
+    <section className="min-h-screen flex items-center py-20 lg:py-24 bg-nk-ivory2">
+      <div className="max-w-7xl mx-auto px-5 sm:px-6 lg:px-10 w-full">
 
         <div ref={ref} className="mb-10 sm:mb-14 text-center">
           <motion.p

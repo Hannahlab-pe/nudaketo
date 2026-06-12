@@ -1,5 +1,9 @@
-import { useRef } from 'react'
+import { useRef, useLayoutEffect } from 'react'
 import { motion, useInView } from 'motion/react'
+import gsap from 'gsap'
+import { ScrollTrigger } from 'gsap/ScrollTrigger'
+
+gsap.registerPlugin(ScrollTrigger)
 
 const values = [
   { abbr: 'IR', title: 'Ingredientes reales', desc: 'Sin aditivos artificiales ni conservantes' },
@@ -10,15 +14,29 @@ const values = [
 
 export default function BrandStory() {
   const ref = useRef(null)
+  const sectionRef = useRef(null)
+  const visualRef = useRef(null)
   const inView = useInView(ref, { once: true, margin: '-80px' })
 
+  useLayoutEffect(() => {
+    const ctx = gsap.context(() => {
+      gsap.to(visualRef.current, {
+        yPercent: -12,
+        ease: 'none',
+        scrollTrigger: { trigger: sectionRef.current, start: 'top bottom', end: 'bottom top', scrub: true },
+      })
+    }, sectionRef)
+    return () => ctx.revert()
+  }, [])
+
   return (
-    <section id="nosotros" className="py-16 sm:py-24 lg:py-36 bg-nk-ivory2 overflow-hidden">
-      <div className="max-w-7xl mx-auto px-5 sm:px-6 lg:px-10">
+    <section id="nosotros" ref={sectionRef} className="min-h-screen flex items-center py-20 lg:py-24 bg-nk-ivory2 overflow-hidden">
+      <div className="max-w-7xl mx-auto px-5 sm:px-6 lg:px-10 w-full">
         <div ref={ref} className="grid lg:grid-cols-2 gap-10 lg:gap-24 items-center">
 
           {/* Visual */}
           <motion.div
+            ref={visualRef}
             initial={{ x: -40, opacity: 0 }}
             animate={inView ? { x: 0, opacity: 1 } : {}}
             transition={{ duration: 0.9, ease: [0.22, 1, 0.36, 1] }}

@@ -42,8 +42,8 @@ export default function Features() {
   const inView = useInView(ref, { once: true, margin: '-80px' })
 
   return (
-    <section id="ingredientes" className="py-16 sm:py-24 lg:py-32 bg-nk-ivory">
-      <div className="max-w-7xl mx-auto px-5 sm:px-6 lg:px-10">
+    <section id="ingredientes" className="min-h-screen flex items-center py-20 lg:py-24 bg-nk-ivory">
+      <div className="max-w-7xl mx-auto px-5 sm:px-6 lg:px-10 w-full">
 
         {/* Stats bar */}
         <motion.div

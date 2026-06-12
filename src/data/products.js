@@ -3,6 +3,7 @@ export const products = [
     id: 1,
     slug: 'galleton-chips-almendras',
     name: 'Galletón Chips & Almendras',
+    category: 'galletones',
     tagline: 'Crujiente · Keto · Premium',
     image: '/images/chips-almendras-lifestyle.jpg',
     imageDetail: '/images/chips-almendras-pack.jpg',
@@ -35,6 +36,7 @@ export const products = [
     id: 2,
     slug: 'galleton-doble-cacao',
     name: 'Galletón Doble Cacao',
+    category: 'galletones',
     tagline: 'Intenso · Chocolate · Keto',
     image: '/images/doble-cacao-lifestyle.jpg',
     imageDetail: '/images/doble-cacao-hero.jpg',
@@ -67,6 +69,7 @@ export const products = [
     id: 3,
     slug: 'galleton-vainilla-chips',
     name: 'Galletón Vainilla Chips',
+    category: 'galletones',
     tagline: 'Suave · Aromático · Keto',
     image: '/images/vainilla-chips-pack.jpg',
     imageDetail: '/images/vainilla-chips-pack.jpg',
@@ -99,6 +102,7 @@ export const products = [
     id: 4,
     slug: 'barra-cacao-nuts',
     name: 'Barra Cacao Nuts',
+    category: 'barras',
     tagline: 'Energizante · Intenso · Keto',
     image: '/images/barra-cacao-pack.jpg',
     imageDetail: '/images/barra-cacao-hero.jpg',
@@ -130,6 +134,7 @@ export const products = [
     id: 5,
     slug: 'keto-bites-almendras-sal',
     name: 'Keto Bites Almendras & Sal',
+    category: 'bites',
     tagline: 'Dulce · Salado · Keto',
     image: '/images/keto-bites-pack.jpg',
     imageDetail: '/images/keto-bites-pack.jpg',
@@ -147,16 +152,24 @@ export const products = [
       'Ideal para antojitos sin culpa',
     ],
     sizes: [
-      { id: 'pack', label: 'Bolsa', size: '141g', pieces: 'Varios bites', price: 25.0 },
+      { id: 'pack-141', label: 'Bolsa Grande', size: '141g', pieces: 'Varios bites', price: 28.0 },
+      { id: 'pack-70', label: 'Bolsa Pequeña', size: '70g', pieces: 'Varios bites', price: 14.0 },
     ],
     badge: 'NUEVO',
     accentClass: 'text-nk-olive',
     btnClass: 'bg-nk-olive hover:bg-nk-choco text-nk-ivory',
     cardBg: 'bg-nk-ivory2',
     protein: '2g por bite',
-    netWeight: '141g',
+    netWeight: '70g / 141g',
     packaging: 'Bolsa doypack resellable',
   },
+]
+
+export const categories = [
+  { id: 'all', label: 'Todos' },
+  { id: 'galletones', label: 'Galletones' },
+  { id: 'barras', label: 'Barras' },
+  { id: 'bites', label: 'Keto Bites' },
 ]
 
 export function getProductBySlug(slug) {

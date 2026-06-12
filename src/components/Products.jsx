@@ -1,8 +1,11 @@
-import { useRef, useState } from 'react'
+import { useRef, useState, useLayoutEffect } from 'react'
 import { Link } from 'react-router-dom'
-import { motion, useInView } from 'motion/react'
+import gsap from 'gsap'
+import { ScrollTrigger } from 'gsap/ScrollTrigger'
 import { products } from '../data/products'
 import { useCart } from '../context/CartContext'
+
+gsap.registerPlugin(ScrollTrigger)
 
 const IconCart = () => (
   <svg viewBox="0 0 24 24" className="w-4 h-4 fill-none stroke-current stroke-2 shrink-0">
@@ -20,167 +23,148 @@ const IconArrow = () => (
   </svg>
 )
 
-function ProductCard({ product, index }) {
-  const ref = useRef(null)
-  const inView = useInView(ref, { once: true, margin: '-80px' })
+function ShowcaseCard({ product }) {
   const { addItem } = useCart()
   const [added, setAdded] = useState(false)
-
   const defaultSize = product.sizes[0]
 
-  const handleAdd = (e) => {
-    e.preventDefault()
+  const handleAdd = () => {
     addItem({
-      id: product.id,
-      sizeId: defaultSize.id,
-      name: product.name,
-      sizeLabel: defaultSize.label,
-      size: defaultSize.size,
-      price: defaultSize.price,
-      qty: 1,
+      id: product.id, sizeId: defaultSize.id, name: product.name,
+      sizeLabel: defaultSize.label, size: defaultSize.size, price: defaultSize.price, qty: 1,
     })
     setAdded(true)
     setTimeout(() => setAdded(false), 2000)
   }
 
   return (
-    <motion.div
-      ref={ref}
-      initial={{ y: 50, opacity: 0 }}
-      animate={inView ? { y: 0, opacity: 1 } : {}}
-      transition={{ duration: 0.7, delay: index * 0.1, ease: [0.22, 1, 0.36, 1] }}
-      className={`relative group rounded-2xl sm:rounded-3xl overflow-hidden border border-nk-arena hover:border-nk-gold/50 transition-all duration-500 hover:shadow-[0_16px_50px_rgba(75,53,39,0.12)] ${product.cardBg} flex flex-col`}
-    >
-      {product.badge && (
-        <div className="absolute top-3 right-3 z-10 text-[10px] font-black px-2.5 py-1.5 rounded-full bg-nk-choco text-nk-ivory"
-          style={{ fontFamily: "'DM Mono', monospace" }}>
-          {product.badge}
-        </div>
-      )}
-
-      {/* Imagen real del producto */}
-      <Link to={`/producto/${product.slug}`} className="block overflow-hidden aspect-4/3">
+    <article className={`shrink-0 w-[82vw] sm:w-[420px] rounded-3xl overflow-hidden border border-nk-arena ${product.cardBg} flex flex-col snap-center group`}>
+      <Link to={`/producto/${product.slug}`} className="block overflow-hidden aspect-[4/3] relative">
         <img
           src={product.image}
           alt={product.name}
-          className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+          className="w-full h-full object-cover transition-transform duration-[1.1s] ease-out group-hover:scale-110"
           loading="lazy"
         />
+        {product.badge && (
+          <span className="absolute top-4 left-4 bg-nk-choco text-nk-ivory text-[10px] font-black px-3 py-1.5 rounded-full" style={{ fontFamily: "'DM Mono', monospace" }}>
+            {product.badge}
+          </span>
+        )}
       </Link>
 
-      <div className="p-5 sm:p-6 flex flex-col gap-4 flex-1">
-        {/* Encabezado */}
+      <div className="p-6 sm:p-7 flex flex-col gap-4 flex-1">
         <div>
           <p className={`text-[10px] tracking-[3px] mb-1.5 ${product.accentClass}`} style={{ fontFamily: "'DM Mono', monospace" }}>
             {product.tagline}
           </p>
-          <h3 className="text-lg sm:text-xl font-bold text-nk-choco leading-snug" style={{ fontFamily: "'Playfair Display', serif" }}>
+          <h3 className="text-2xl font-bold text-nk-choco leading-snug" style={{ fontFamily: "'Playfair Display', serif" }}>
             {product.name}
           </h3>
         </div>
 
-        <p className="text-nk-muted text-xs sm:text-sm leading-relaxed">{product.shortDesc}</p>
-
-        {/* Highlights */}
-        <ul className="flex flex-col gap-1.5">
-          {product.highlights.slice(0, 3).map((h) => (
-            <li key={h} className="flex items-center gap-2 text-nk-muted text-xs sm:text-sm">
-              <svg viewBox="0 0 24 24" className={`w-3 h-3 fill-none stroke-current stroke-2 shrink-0 ${product.accentClass}`}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7"/>
-              </svg>
-              {h}
-            </li>
-          ))}
-        </ul>
+        <p className="text-nk-muted text-sm leading-relaxed">{product.shortDesc}</p>
 
         <div className="flex-1" />
         <div className="w-full h-px bg-nk-arena/60" />
 
-        {/* Precios */}
-        <div className="flex flex-wrap gap-2">
-          {product.sizes.map((s) => (
-            <div key={s.id} className="flex-1 min-w-24 rounded-xl border border-nk-arena p-3 flex flex-col gap-0.5 bg-nk-ivory/60">
-              <span className={`text-[9px] tracking-[2px] ${product.accentClass}`} style={{ fontFamily: "'DM Mono', monospace" }}>
-                {s.label}
-              </span>
-              <span className="text-nk-muted text-[10px]">{s.pieces}</span>
-              <span className="text-nk-choco text-lg font-black mt-0.5" style={{ fontFamily: "'Playfair Display', serif" }}>
-                S/{s.price.toFixed(2)}
-              </span>
-            </div>
-          ))}
-        </div>
-
-        {/* Acciones */}
-        <div className="flex gap-2">
-          <button
-            onClick={handleAdd}
-            className={`flex-1 flex items-center justify-center gap-2 py-3 rounded-xl font-semibold text-sm transition-all duration-300 hover:scale-[1.02] active:scale-[0.98] ${
-              added ? 'bg-nk-olive text-nk-ivory' : product.btnClass
-            }`}
-          >
-            {added ? <IconCheck /> : <IconCart />}
-            {added ? 'Agregado' : 'Al carrito'}
-          </button>
-
-          <Link
-            to={`/producto/${product.slug}`}
-            className="flex items-center justify-center gap-1.5 border-2 border-nk-choco/20 hover:border-nk-choco text-nk-muted hover:text-nk-choco px-4 py-3 rounded-xl text-sm font-medium transition-all duration-200"
-          >
-            Ver
-            <IconArrow />
+        <div className="flex items-end justify-between">
+          <div>
+            <span className="text-[10px] text-nk-muted">Desde</span>
+            <p style={{ fontFamily: "'Playfair Display', serif" }} className="text-3xl font-black text-nk-choco leading-none">
+              S/{Math.min(...product.sizes.map(s => s.price)).toFixed(2)}
+            </p>
+          </div>
+          <Link to={`/producto/${product.slug}`} className="flex items-center gap-1 text-nk-muted hover:text-nk-choco text-sm transition-colors">
+            Ver detalle <IconArrow />
           </Link>
         </div>
+
+        <button
+          onClick={handleAdd}
+          className={`flex items-center justify-center gap-2 w-full py-3.5 rounded-xl font-semibold text-sm transition-all duration-300 ${
+            added ? 'bg-nk-olive text-nk-ivory' : product.btnClass
+          }`}
+        >
+          {added ? <IconCheck /> : <IconCart />}
+          {added ? 'Agregado al carrito' : 'Agregar al carrito'}
+        </button>
       </div>
-    </motion.div>
+    </article>
   )
 }
 
 export default function Products() {
-  const titleRef = useRef(null)
-  const inView = useInView(titleRef, { once: true, margin: '-80px' })
+  const sectionRef = useRef(null)
+  const trackRef = useRef(null)
+  const progressRef = useRef(null)
+
+  useLayoutEffect(() => {
+    const mm = gsap.matchMedia()
+
+    mm.add('(min-width: 768px)', () => {
+      const track = trackRef.current
+      const getScrollDist = () => track.scrollWidth - window.innerWidth + 96 // padding compensación
+
+      const tween = gsap.to(track, {
+        x: () => -getScrollDist(),
+        ease: 'none',
+        scrollTrigger: {
+          trigger: sectionRef.current,
+          start: 'top top',
+          end: () => `+=${getScrollDist()}`,
+          pin: true,
+          scrub: 1,
+          invalidateOnRefresh: true,
+          onUpdate: (self) => {
+            if (progressRef.current) gsap.set(progressRef.current, { scaleX: self.progress })
+          },
+        },
+      })
+
+      return () => tween.kill()
+    })
+
+    return () => mm.revert()
+  }, [])
 
   return (
-    <section id="productos" className="py-16 sm:py-24 lg:py-32 bg-nk-ivory">
-      <div className="max-w-7xl mx-auto px-5 sm:px-6 lg:px-10">
+    <section id="productos" ref={sectionRef} className="relative bg-nk-ivory overflow-hidden">
+      <div className="md:h-screen flex flex-col justify-center py-16 md:py-0">
 
-        <div ref={titleRef} className="mb-10 sm:mb-14 flex flex-col lg:flex-row lg:items-end justify-between gap-4 sm:gap-6">
-          <div>
-            <motion.p
-              initial={{ opacity: 0, y: 20 }}
-              animate={inView ? { opacity: 1, y: 0 } : {}}
-              transition={{ duration: 0.6 }}
-              className="text-nk-gold text-[10px] sm:text-xs tracking-[4px] mb-2 sm:mb-3"
-              style={{ fontFamily: "'DM Mono', monospace" }}
-            >
-              CATÁLOGO
-            </motion.p>
-            <motion.h2
-              initial={{ opacity: 0, y: 30 }}
-              animate={inView ? { opacity: 1, y: 0 } : {}}
-              transition={{ duration: 0.7, delay: 0.1 }}
-              className="text-3xl sm:text-4xl lg:text-6xl font-black text-nk-choco leading-none"
-              style={{ fontFamily: "'Playfair Display', serif" }}
-            >
-              Nuestros
-              <br />
-              <span className="italic text-nk-gold">Productos</span>
-            </motion.h2>
+        {/* Header */}
+        <div className="max-w-7xl mx-auto px-5 sm:px-6 lg:px-10 w-full mb-8 md:mb-12">
+          <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-4">
+            <div>
+              <p className="text-nk-gold text-[10px] sm:text-xs tracking-[4px] mb-2 sm:mb-3" style={{ fontFamily: "'DM Mono', monospace" }}>
+                CATÁLOGO
+              </p>
+              <h2 className="text-3xl sm:text-4xl lg:text-6xl font-black text-nk-choco leading-none" style={{ fontFamily: "'Playfair Display', serif" }}>
+                Nuestros <span className="italic text-nk-gold">Productos</span>
+              </h2>
+            </div>
+            <p className="text-nk-muted text-sm max-w-xs leading-relaxed hidden md:flex items-center gap-2">
+              <span className="hidden lg:inline">Desplázate para explorar</span>
+              <IconArrow />
+            </p>
           </div>
-          <motion.p
-            initial={{ opacity: 0 }}
-            animate={inView ? { opacity: 1 } : {}}
-            transition={{ duration: 0.6, delay: 0.2 }}
-            className="text-nk-muted text-sm max-w-xs leading-relaxed"
-          >
-            Cinco opciones únicas. Todos sin azúcar añadida, gluten free y con ingredientes reales.
-          </motion.p>
+
+          {/* Barra de progreso del carrusel (desktop) */}
+          <div className="hidden md:block mt-6 h-px bg-nk-arena/60 relative overflow-hidden rounded-full">
+            <div ref={progressRef} className="absolute inset-0 bg-nk-gold origin-left" style={{ transform: 'scaleX(0)' }} />
+          </div>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5">
-          {products.map((product, i) => (
-            <ProductCard key={product.id} product={product} index={i} />
-          ))}
+        {/* Track horizontal: pin+scrub en desktop, swipe en mobile */}
+        <div className="overflow-x-auto md:overflow-visible no-scrollbar snap-x snap-mandatory">
+          <div
+            ref={trackRef}
+            className="flex gap-5 sm:gap-6 px-5 sm:px-6 lg:pl-10 lg:pr-[20vw] w-max will-change-transform"
+          >
+            {products.map((product) => (
+              <ShowcaseCard key={product.id} product={product} />
+            ))}
+          </div>
         </div>
       </div>
     </section>

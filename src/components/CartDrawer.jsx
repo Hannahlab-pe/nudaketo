@@ -1,8 +1,10 @@
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
 import { motion, AnimatePresence } from 'motion/react'
 import { useCart } from '../context/CartContext'
+import { useAuth } from '../context/AuthContext'
 
 const CULQI_KEY = import.meta.env.VITE_CULQI_PUBLIC_KEY || ''
+const API = import.meta.env.VITE_API_URL || 'http://localhost:3000'
 
 const IconTrash = () => (
   <svg viewBox="0 0 24 24" className="w-4 h-4 fill-none stroke-current stroke-2">
@@ -33,63 +35,95 @@ const WA = () => (
 
 export default function CartDrawer() {
   const { items, total, count, isOpen, setIsOpen, removeItem, updateQty, clearCart, buildWhatsAppMessage } = useCart()
+  const { isAuthenticated, token, openLogin } = useAuth()
   const [paying, setPaying] = useState(false)
   const [paymentOk, setPaymentOk] = useState(false)
+  const [payError, setPayError] = useState('')
+
+  // Ref para acceder a items/total/token dentro del callback global de Culqi sin re-registrar
+  const stateRef = useRef({})
+  stateRef.current = { items, total, token }
 
   // Callback global que Culqi invoca al generar el token
-  const handleCulqiToken = useCallback(() => {
+  const handleCulqiToken = useCallback(async () => {
     if (!window.Culqi) return
     if (window.Culqi.token) {
-      // Token generado — en producción enviarlo al backend para cobrar
-      const token = window.Culqi.token
+      const culqiToken = window.Culqi.token
       window.Culqi.close()
-      setPaying(false)
-      setPaymentOk(true)
-      clearCart()
-      // Notificar al equipo por WhatsApp con referencia del token
-      const msg = encodeURIComponent(
-        `Pago procesado con tarjeta:\nToken Culqi: ${token.id}\nEmail: ${token.email}\nTotal: S/${total.toFixed(2)}\n\nProductos:\n` +
-        items.map(i => `• ${i.name} (${i.sizeLabel}) x${i.qty} = S/${(i.price * i.qty).toFixed(2)}`).join('\n')
-      )
-      window.open(`https://wa.me/51986769073?text=${msg}`, '_blank')
+      setPaying(true)
+      setPayError('')
+
+      const { items: cartItems, total: cartTotal, token: authToken } = stateRef.current
+      try {
+        const res = await fetch(`${API}/orders`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${authToken}`,
+          },
+          body: JSON.stringify({
+            culqiToken: culqiToken.id,
+            email: culqiToken.email,
+            items: cartItems.map(i => ({
+              productId: i.id,
+              sizeId: i.sizeId,
+              name: i.name,
+              qty: i.qty,
+              price: i.price,
+            })),
+            totalCents: Math.round(cartTotal * 100),
+          }),
+        })
+        if (!res.ok) {
+          const err = await res.json().catch(() => ({}))
+          throw new Error(err.message || 'Error al procesar el pago')
+        }
+        clearCart()
+        setPaymentOk(true)
+      } catch (err) {
+        setPayError(err.message || 'Error al procesar el pago. Intenta nuevamente.')
+      } finally {
+        setPaying(false)
+      }
     } else if (window.Culqi.error) {
       setPaying(false)
-      console.error('Culqi error:', window.Culqi.error)
+      setPayError(window.Culqi.error.user_message || 'Error en el pago. Intenta nuevamente.')
     }
-  }, [total, items, clearCart])
+  }, [clearCart])
 
-  // Registrar el callback global cada vez que cambia
+  // Registrar el callback global una sola vez
   useEffect(() => {
     window.culqi = handleCulqiToken
     return () => { window.culqi = undefined }
   }, [handleCulqiToken])
 
-  const handleCulqiPay = () => {
+  const openCulqi = () => {
     if (!window.Culqi) {
-      alert('El sistema de pago no está disponible. Intenta nuevamente o usa WhatsApp.')
+      alert('El sistema de pago no está disponible. Intenta por WhatsApp.')
       return
     }
     if (!CULQI_KEY) {
-      alert('Clave de Culqi no configurada. Contacta al administrador.')
+      alert('Clave de Culqi no configurada.')
       return
     }
-    setPaying(true)
+    setPayError('')
     window.Culqi.publicKey = CULQI_KEY
     window.Culqi.settings({
       title: 'NUDA KETO',
       currency: 'PEN',
       description: `Pedido NUDA KETO (${count} producto${count > 1 ? 's' : ''})`,
-      amount: Math.round(total * 100), // Culqi trabaja en céntimos
+      amount: Math.round(total * 100),
       order: null,
     })
     window.Culqi.open()
-    // Si el usuario cierra el modal sin pagar
-    const checkClosed = setInterval(() => {
-      if (!document.querySelector('#culqi-modal')) {
-        setPaying(false)
-        clearInterval(checkClosed)
-      }
-    }, 500)
+  }
+
+  const handleCulqiPay = () => {
+    if (!isAuthenticated) {
+      openLogin(() => openCulqi())
+      return
+    }
+    openCulqi()
   }
 
   return (
@@ -237,6 +271,13 @@ export default function CartDrawer() {
                         S/{total.toFixed(2)}
                       </span>
                     </div>
+
+                    {/* Error de pago */}
+                    {payError && (
+                      <p className="text-red-500 text-xs bg-red-50 border border-red-200 rounded-xl px-3 py-2">
+                        {payError}
+                      </p>
+                    )}
 
                     {/* Separador visual */}
                     <div className="flex items-center gap-3">
