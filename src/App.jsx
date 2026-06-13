@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { BrowserRouter, Routes, Route, useLocation } from 'react-router-dom'
 import { AnimatePresence } from 'motion/react'
+import { Toaster } from 'sonner'
 import Lenis from 'lenis'
 import gsap from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
@@ -94,6 +95,16 @@ export default function App() {
     <BrowserRouter>
       <AuthProvider>
         <CartProvider>
+          <Toaster
+            position="top-center"
+            richColors
+            toastOptions={{
+              style: {
+                fontFamily: "'DM Mono', monospace",
+                borderRadius: '14px',
+              },
+            }}
+          />
           <AnimatePresence>
             {loading && <LoadingScreen key="loader" onDone={handleDone} />}
           </AnimatePresence>
