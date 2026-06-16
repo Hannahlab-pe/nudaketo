@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from 'react'
 import { Link } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
+import { IconStore, IconDelivery } from '../components/icons'
 
 const API = import.meta.env.VITE_API_URL || 'http://localhost:3000'
 
@@ -98,7 +99,7 @@ export default function MisComprasPage() {
             {orders.map((o) => {
               const st = statusLabels[o.status] || statusLabels.PAID
               return (
-                <div key={o.id} className="rounded-2xl border border-nk-arena bg-white p-5 sm:p-6">
+                <Link key={o.id} to={`/mis-compras/${o.id}`} className="block rounded-2xl border border-nk-arena bg-white p-5 sm:p-6 hover:border-nk-gold/50 hover:shadow-[0_4px_20px_rgba(75,53,39,0.08)] transition-all group">
                   <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4 pb-4 border-b border-nk-arena">
                     <p style={{ fontFamily: "'DM Mono', monospace" }} className="text-nk-muted text-[11px]">{fmtDate(o.createdAt)}</p>
                     <div className="flex items-center gap-3">
@@ -119,18 +120,21 @@ export default function MisComprasPage() {
                     ))}
                   </ul>
 
-                  {/* Entrega */}
-                  <div className="mt-3 pt-3 border-t border-nk-arena text-xs text-nk-muted">
-                    {o.fulfillment === 'PICKUP' ? (
-                      <span>🏪 Recojo en tienda</span>
-                    ) : (
-                      <span>
-                        🛵 Envío {o.shippingCents > 0 ? `S/${(o.shippingCents / 100).toFixed(2)}` : 'gratis'}
-                        {o.address ? ` · ${o.address}${o.district ? `, ${o.district}` : ''}` : ''}
-                      </span>
-                    )}
+                  {/* Entrega + ver detalle */}
+                  <div className="mt-3 pt-3 border-t border-nk-arena flex items-center justify-between gap-2 text-xs text-nk-muted">
+                    <span className="flex items-center gap-1.5">
+                      {o.fulfillment === 'PICKUP' ? (
+                        <><IconStore className="w-3.5 h-3.5" /> Recojo en tienda</>
+                      ) : (
+                        <><IconDelivery className="w-3.5 h-3.5" /> Envío {o.shippingCents > 0 ? `S/${(o.shippingCents / 100).toFixed(2)}` : 'gratis'}</>
+                      )}
+                    </span>
+                    <span className="flex items-center gap-1 text-nk-gold font-semibold group-hover:gap-2 transition-all">
+                      Ver detalle
+                      <svg viewBox="0 0 24 24" className="w-3.5 h-3.5 fill-none stroke-current stroke-2"><path strokeLinecap="round" strokeLinejoin="round" d="M9 18l6-6-6-6"/></svg>
+                    </span>
                   </div>
-                </div>
+                </Link>
               )
             })}
           </div>

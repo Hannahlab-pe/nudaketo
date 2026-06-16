@@ -17,6 +17,10 @@ import StorePage from './pages/StorePage'
 import ProductPage from './pages/ProductPage'
 import AdminPage from './pages/AdminPage'
 import MisComprasPage from './pages/MisComprasPage'
+import CheckoutPage from './pages/CheckoutPage'
+import PerfilPage from './pages/PerfilPage'
+import OrderDetailPage from './pages/OrderDetailPage'
+import AdminOrderDetailPage from './pages/AdminOrderDetailPage'
 import TermsPage from './pages/TermsPage'
 import PrivacyPage from './pages/PrivacyPage'
 import ReturnsPage from './pages/ReturnsPage'
@@ -79,7 +83,11 @@ function Layout() {
         <Route path="/" element={<HomePage />} />
         <Route path="/tienda" element={<StorePage />} />
         <Route path="/admin" element={<AdminPage />} />
+        <Route path="/admin/pedido/:id" element={<AdminOrderDetailPage />} />
         <Route path="/mis-compras" element={<MisComprasPage />} />
+        <Route path="/mis-compras/:id" element={<OrderDetailPage />} />
+        <Route path="/checkout" element={<CheckoutPage />} />
+        <Route path="/perfil" element={<PerfilPage />} />
         <Route path="/producto/:slug" element={<ProductPage />} />
         <Route path="/terminos-y-condiciones" element={<TermsPage />} />
         <Route path="/politica-de-privacidad" element={<PrivacyPage />} />

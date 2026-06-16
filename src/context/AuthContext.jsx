@@ -57,6 +57,33 @@ export function AuthProvider({ children }) {
     setUser(null)
   }, [])
 
+  // Mezcla y persiste cambios en el usuario (ej: dirección guardada)
+  const updateUser = useCallback((partial) => {
+    setUser((prev) => {
+      const next = { ...prev, ...partial }
+      localStorage.setItem('nk_user', JSON.stringify(next))
+      return next
+    })
+  }, [])
+
+  // Actualiza el perfil en el backend (nombre/dirección)
+  const saveProfile = useCallback(async (fields) => {
+    const t = localStorage.getItem('nk_token')
+    const res = await fetch(`${API}/auth/profile`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${t}` },
+      body: JSON.stringify(fields),
+    })
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}))
+      throw new Error(err.message || 'No se pudo guardar el perfil')
+    }
+    const updated = await res.json()
+    localStorage.setItem('nk_user', JSON.stringify(updated))
+    setUser(updated)
+    return updated
+  }, [])
+
   const openLogin = useCallback((cb) => {
     successCb.current = cb ?? null
     setModalMode('login')
@@ -93,6 +120,8 @@ export function AuthProvider({ children }) {
         login,
         register,
         logout,
+        updateUser,
+        saveProfile,
         modalOpen,
         modalMode,
         setModalMode,

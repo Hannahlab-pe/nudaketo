@@ -116,8 +116,11 @@ export default function Navbar() {
           {/* Auth */}
           {user ? (
             <div className="flex items-center gap-2">
-              <Link to="/mis-compras" className="text-nk-choco text-sm font-medium max-w-28 truncate hover:text-nk-gold transition-colors" title="Mis compras">
+              <Link to="/perfil" className="text-nk-choco text-sm font-medium max-w-28 truncate hover:text-nk-gold transition-colors" title="Mi perfil">
                 {user.name}
+              </Link>
+              <Link to="/mis-compras" className="text-nk-muted hover:text-nk-choco text-xs border border-nk-arena hover:border-nk-choco px-3 py-1.5 rounded-full transition-all">
+                Mis compras
               </Link>
               <button
                 onClick={logout}
@@ -196,6 +199,9 @@ export default function Navbar() {
               )}
               {user ? (
                 <>
+                  <Link to="/perfil" onClick={() => setMenuOpen(false)} className="block text-nk-muted text-base py-1">
+                    Mi perfil
+                  </Link>
                   <Link to="/mis-compras" onClick={() => setMenuOpen(false)} className="block text-nk-muted text-base py-1">
                     Mis compras
                   </Link>
