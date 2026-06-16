@@ -47,7 +47,8 @@ const priceRanges = [
 function ProductStoreCard({ product }) {
   const { addItem } = useCart()
   const [added, setAdded] = useState(false)
-  const defaultSize = product.sizes[0]
+  // Agrega la presentación cuyo precio se muestra ("Desde S/…"), la más barata
+  const defaultSize = product.sizes.reduce((min, s) => (s.price < min.price ? s : min), product.sizes[0])
 
   const handleAdd = (e) => {
     e.preventDefault()

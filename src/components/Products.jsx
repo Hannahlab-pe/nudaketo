@@ -26,7 +26,7 @@ const IconArrow = () => (
 function ShowcaseCard({ product }) {
   const { addItem } = useCart()
   const [added, setAdded] = useState(false)
-  const defaultSize = product.sizes[0]
+  const defaultSize = product.sizes.reduce((min, s) => (s.price < min.price ? s : min), product.sizes[0])
 
   const handleAdd = () => {
     addItem({
