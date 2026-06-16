@@ -1,6 +1,21 @@
-import { createContext, useContext, useReducer, useState } from 'react'
+import { createContext, useContext, useReducer, useState, useEffect } from 'react'
 
 const CartContext = createContext(null)
+
+const STORAGE_KEY = 'nk_cart'
+
+function loadInitialState() {
+  try {
+    const saved = localStorage.getItem(STORAGE_KEY)
+    if (saved) {
+      const parsed = JSON.parse(saved)
+      if (Array.isArray(parsed?.items)) return { items: parsed.items }
+    }
+  } catch {
+    // ignora datos corruptos
+  }
+  return { items: [] }
+}
 
 function cartReducer(state, action) {
   switch (action.type) {
@@ -34,8 +49,17 @@ function cartReducer(state, action) {
 }
 
 export function CartProvider({ children }) {
-  const [state, dispatch] = useReducer(cartReducer, { items: [] })
+  const [state, dispatch] = useReducer(cartReducer, undefined, loadInitialState)
   const [isOpen, setIsOpen] = useState(false)
+
+  // Persiste el carrito en localStorage ante cualquier cambio
+  useEffect(() => {
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify({ items: state.items }))
+    } catch {
+      // almacenamiento no disponible
+    }
+  }, [state.items])
 
   const addItem = (item) => {
     dispatch({ type: 'ADD', item })
