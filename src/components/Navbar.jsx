@@ -39,7 +39,7 @@ export default function Navbar() {
   const [scrolled, setScrolled] = useState(false)
   const [menuOpen, setMenuOpen] = useState(false)
   const { count, setIsOpen } = useCart()
-  const { user, logout, openLogin } = useAuth()
+  const { user, isAdmin, logout, openLogin } = useAuth()
 
   useEffect(() => {
     const handler = () => setScrolled(window.scrollY > 60)
@@ -101,6 +101,17 @@ export default function Navbar() {
               </motion.span>
             )}
           </button>
+
+          {/* Panel admin */}
+          {isAdmin && (
+            <Link
+              to="/admin"
+              className="flex items-center gap-1.5 bg-nk-gold/15 border border-nk-gold/40 text-nk-choco hover:bg-nk-gold/25 px-3 py-2 rounded-full text-xs font-semibold transition-all"
+            >
+              <svg viewBox="0 0 24 24" className="w-3.5 h-3.5 fill-none stroke-current stroke-2"><path strokeLinecap="round" strokeLinejoin="round" d="M3 3h7v7H3zM14 3h7v7h-7zM14 14h7v7h-7zM3 14h7v7H3z"/></svg>
+              Panel
+            </Link>
+          )}
 
           {/* Auth */}
           {user ? (
@@ -175,6 +186,12 @@ export default function Navbar() {
                   )}
                 </motion.div>
               ))}
+              {isAdmin && (
+                <Link to="/admin" onClick={() => setMenuOpen(false)} className="flex items-center gap-2 bg-nk-gold/15 border border-nk-gold/40 text-nk-choco px-4 py-2.5 rounded-full text-sm font-semibold">
+                  <svg viewBox="0 0 24 24" className="w-4 h-4 fill-none stroke-current stroke-2"><path strokeLinecap="round" strokeLinejoin="round" d="M3 3h7v7H3zM14 3h7v7h-7zM14 14h7v7h-7zM3 14h7v7H3z"/></svg>
+                  Panel de administración
+                </Link>
+              )}
               {user ? (
                 <div className="flex items-center justify-between pt-1 border-t border-nk-arena">
                   <span className="text-nk-choco text-sm font-medium truncate">{user.name}</span>

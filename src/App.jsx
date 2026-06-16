@@ -15,6 +15,7 @@ import Footer from './components/Footer'
 import HomePage from './pages/HomePage'
 import StorePage from './pages/StorePage'
 import ProductPage from './pages/ProductPage'
+import AdminPage from './pages/AdminPage'
 import TermsPage from './pages/TermsPage'
 import PrivacyPage from './pages/PrivacyPage'
 import ReturnsPage from './pages/ReturnsPage'
@@ -76,6 +77,7 @@ function Layout() {
       <Routes>
         <Route path="/" element={<HomePage />} />
         <Route path="/tienda" element={<StorePage />} />
+        <Route path="/admin" element={<AdminPage />} />
         <Route path="/producto/:slug" element={<ProductPage />} />
         <Route path="/terminos-y-condiciones" element={<TermsPage />} />
         <Route path="/politica-de-privacidad" element={<PrivacyPage />} />

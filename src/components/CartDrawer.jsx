@@ -55,13 +55,19 @@ export default function CartDrawer() {
   // Ref para acceder a items/total/token dentro del callback global de Culqi
   const stateRef = useRef({})
   stateRef.current = { items, total, token }
+  // Evita abrir el checkout dos veces por doble-click
+  const openingRef = useRef(false)
+  // Evita procesar el mismo cobro dos veces
+  const chargingRef = useRef(false)
 
   // Envía el token de Culqi al backend para crear el cargo + la orden
   const processCharge = useCallback(async (tokenId, email) => {
+    if (chargingRef.current) return // ya hay un cobro en curso
+    chargingRef.current = true
     setPaying(true)
     setPayError('')
     const tid = toast.loading('Procesando tu pago...')
-    const { items: cartItems, total: cartTotal, token: authToken } = stateRef.current
+    const { items: cartItems, token: authToken } = stateRef.current
     try {
       const res = await fetch(`${API}/orders`, {
         method: 'POST',
@@ -79,7 +85,6 @@ export default function CartDrawer() {
             qty: i.qty,
             price: i.price,
           })),
-          totalCents: Math.round(cartTotal * 100),
         }),
       })
       if (!res.ok) {
@@ -95,6 +100,8 @@ export default function CartDrawer() {
       toast.error(msg, { id: tid })
     } finally {
       setPaying(false)
+      chargingRef.current = false
+      openingRef.current = false
     }
   }, [clearCart])
 
@@ -146,7 +153,12 @@ export default function CartDrawer() {
   }, [])
 
   const handleCulqiPay = () => {
-    if (items.length === 0) return
+    if (items.length === 0 || paying) return
+    // Bloqueo anti doble-click (se libera a los 2.5s o al cerrar/pagar)
+    if (openingRef.current) return
+    openingRef.current = true
+    setTimeout(() => { openingRef.current = false }, 2500)
+
     if (!isAuthenticated) {
       toast.info('Inicia sesión para completar tu compra')
       openLogin(() => openCulqi())
