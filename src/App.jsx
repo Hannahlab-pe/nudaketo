@@ -16,6 +16,7 @@ import HomePage from './pages/HomePage'
 import StorePage from './pages/StorePage'
 import ProductPage from './pages/ProductPage'
 import AdminPage from './pages/AdminPage'
+import MisComprasPage from './pages/MisComprasPage'
 import TermsPage from './pages/TermsPage'
 import PrivacyPage from './pages/PrivacyPage'
 import ReturnsPage from './pages/ReturnsPage'
@@ -78,6 +79,7 @@ function Layout() {
         <Route path="/" element={<HomePage />} />
         <Route path="/tienda" element={<StorePage />} />
         <Route path="/admin" element={<AdminPage />} />
+        <Route path="/mis-compras" element={<MisComprasPage />} />
         <Route path="/producto/:slug" element={<ProductPage />} />
         <Route path="/terminos-y-condiciones" element={<TermsPage />} />
         <Route path="/politica-de-privacidad" element={<PrivacyPage />} />

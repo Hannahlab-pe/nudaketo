@@ -159,7 +159,39 @@ export default function AdminPage() {
                     ))}
                   </ul>
 
-                  <p style={{ fontFamily: "'DM Mono', monospace" }} className="text-nk-arena text-[10px] mt-4">
+                  {/* Entrega */}
+                  <div className="mt-4 rounded-xl bg-nk-ivory border border-nk-arena p-3.5">
+                    {o.fulfillment === 'PICKUP' ? (
+                      <p className="text-sm text-nk-choco font-semibold flex items-center gap-2">
+                        🏪 Recojo en tienda
+                      </p>
+                    ) : (
+                      <div className="flex flex-col gap-1 text-sm">
+                        <p className="text-nk-choco font-semibold flex items-center gap-2">
+                          🛵 Envío a domicilio {o.shippingCents > 0 && <span className="text-nk-muted font-normal">· S/{(o.shippingCents / 100).toFixed(2)}</span>}
+                        </p>
+                        {o.customerName && <p className="text-nk-choco">{o.customerName} · {o.phone}</p>}
+                        <p className="text-nk-muted">{o.address}{o.district ? `, ${o.district}` : ''}{o.city ? `, ${o.city}` : ''}</p>
+                        {o.reference && <p className="text-nk-muted text-xs">Ref: {o.reference}</p>}
+                        <div className="flex gap-3 mt-1">
+                          <a
+                            href={o.mapsLink || `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent([o.address, o.district, o.city].filter(Boolean).join(', '))}`}
+                            target="_blank" rel="noreferrer"
+                            className="text-nk-gold hover:underline text-xs font-semibold"
+                          >
+                            📍 Ver en Google Maps
+                          </a>
+                          {o.phone && (
+                            <a href={`https://wa.me/51${(o.phone || '').replace(/\D/g, '')}`} target="_blank" rel="noreferrer" className="text-nk-olive hover:underline text-xs font-semibold">
+                              💬 WhatsApp
+                            </a>
+                          )}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+
+                  <p style={{ fontFamily: "'DM Mono', monospace" }} className="text-nk-arena text-[10px] mt-3">
                     Culqi: {o.culqiCharge}
                   </p>
                 </div>

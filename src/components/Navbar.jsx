@@ -116,7 +116,9 @@ export default function Navbar() {
           {/* Auth */}
           {user ? (
             <div className="flex items-center gap-2">
-              <span className="text-nk-choco text-sm font-medium max-w-28 truncate">{user.name}</span>
+              <Link to="/mis-compras" className="text-nk-choco text-sm font-medium max-w-28 truncate hover:text-nk-gold transition-colors" title="Mis compras">
+                {user.name}
+              </Link>
               <button
                 onClick={logout}
                 className="text-nk-muted hover:text-nk-choco text-xs border border-nk-arena hover:border-nk-choco px-3 py-1.5 rounded-full transition-all"
@@ -193,12 +195,17 @@ export default function Navbar() {
                 </Link>
               )}
               {user ? (
-                <div className="flex items-center justify-between pt-1 border-t border-nk-arena">
-                  <span className="text-nk-choco text-sm font-medium truncate">{user.name}</span>
-                  <button onClick={() => { logout(); setMenuOpen(false) }} className="text-nk-muted text-xs border border-nk-arena px-3 py-1.5 rounded-full">
-                    Salir
-                  </button>
-                </div>
+                <>
+                  <Link to="/mis-compras" onClick={() => setMenuOpen(false)} className="block text-nk-muted text-base py-1">
+                    Mis compras
+                  </Link>
+                  <div className="flex items-center justify-between pt-1 border-t border-nk-arena">
+                    <span className="text-nk-choco text-sm font-medium truncate">{user.name}</span>
+                    <button onClick={() => { logout(); setMenuOpen(false) }} className="text-nk-muted text-xs border border-nk-arena px-3 py-1.5 rounded-full">
+                      Salir
+                    </button>
+                  </div>
+                </>
               ) : (
                 <button
                   onClick={() => { openLogin(); setMenuOpen(false) }}

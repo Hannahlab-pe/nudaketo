@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback, useRef } from 'react'
+import { Link } from 'react-router-dom'
 import { motion, AnimatePresence } from 'motion/react'
 import { toast } from 'sonner'
 import { useCart } from '../context/CartContext'
@@ -45,16 +46,131 @@ const IconCard = () => (
     <path d="M1 10h22"/>
   </svg>
 )
+function Field({ label, value, onChange, placeholder, type = 'text', optional = false }) {
+  return (
+    <div className="flex flex-col gap-1">
+      <label className="text-nk-choco text-[11px] font-semibold flex items-center gap-1" style={{ fontFamily: "'DM Mono', monospace" }}>
+        {label}
+        {optional && <span className="text-nk-muted font-normal">(opcional)</span>}
+      </label>
+      <input
+        type={type}
+        value={value}
+        onChange={onChange}
+        placeholder={placeholder}
+        className="w-full px-3.5 py-2.5 rounded-xl border-2 border-nk-arena focus:border-nk-gold focus:outline-none bg-white text-nk-choco text-sm placeholder:text-nk-arena/80 transition-colors"
+      />
+    </div>
+  )
+}
+
+function ShippingStep({ fulfillment, setFulfillment, zone, setZone, form, setField }) {
+  return (
+    <div className="flex flex-col gap-5">
+      {/* Tipo de entrega */}
+      <div>
+        <p style={{ fontFamily: "'DM Mono', monospace" }} className="text-nk-muted text-[10px] tracking-[3px] mb-2.5">¿CÓMO LO RECIBES?</p>
+        <div className="grid grid-cols-2 gap-2.5">
+          <button
+            onClick={() => setFulfillment('DELIVERY')}
+            className={`flex flex-col items-center gap-1.5 p-3.5 rounded-xl border-2 transition-all ${
+              fulfillment === 'DELIVERY' ? 'border-nk-gold bg-nk-gold/5' : 'border-nk-arena bg-white hover:border-nk-gold/50'
+            }`}
+          >
+            <svg viewBox="0 0 24 24" className="w-6 h-6 fill-none stroke-nk-choco stroke-2"><path strokeLinecap="round" strokeLinejoin="round" d="M3 9l1-5h13l1 5M3 9h17M3 9v9a1 1 0 001 1h1m13-10v9a1 1 0 01-1 1h-1m-11 0a2 2 0 104 0m-4 0h4m7 0a2 2 0 104 0m-4 0h4"/></svg>
+            <span className="text-nk-choco text-xs font-semibold">Envío a domicilio</span>
+          </button>
+          <button
+            onClick={() => setFulfillment('PICKUP')}
+            className={`flex flex-col items-center gap-1.5 p-3.5 rounded-xl border-2 transition-all ${
+              fulfillment === 'PICKUP' ? 'border-nk-gold bg-nk-gold/5' : 'border-nk-arena bg-white hover:border-nk-gold/50'
+            }`}
+          >
+            <svg viewBox="0 0 24 24" className="w-6 h-6 fill-none stroke-nk-choco stroke-2"><path strokeLinecap="round" strokeLinejoin="round" d="M3 21h18M5 21V7l7-4 7 4v14M9 9h.01M15 9h.01M9 13h.01M15 13h.01M9 17h6"/></svg>
+            <span className="text-nk-choco text-xs font-semibold">Recojo en tienda</span>
+          </button>
+        </div>
+      </div>
+
+      {fulfillment === 'PICKUP' ? (
+        <div className="rounded-xl border border-nk-arena bg-white p-4 text-sm text-nk-muted leading-relaxed">
+          <p className="text-nk-choco font-semibold mb-1">Recojo en tienda — Gratis</p>
+          Te contactaremos por correo para coordinar el día y hora de recojo. 🏪
+        </div>
+      ) : (
+        <>
+          {/* Zona */}
+          <div>
+            <p style={{ fontFamily: "'DM Mono', monospace" }} className="text-nk-muted text-[10px] tracking-[3px] mb-2.5">ZONA DE ENVÍO</p>
+            <div className="grid grid-cols-2 gap-2.5">
+              <button
+                onClick={() => setZone('lima')}
+                className={`flex items-center justify-between p-3 rounded-xl border-2 transition-all ${zone === 'lima' ? 'border-nk-gold bg-nk-gold/5' : 'border-nk-arena bg-white'}`}
+              >
+                <span className="text-nk-choco text-sm font-medium">Lima</span>
+                <span className="text-nk-gold text-xs font-bold">S/10</span>
+              </button>
+              <button
+                onClick={() => setZone('provincia')}
+                className={`flex items-center justify-between p-3 rounded-xl border-2 transition-all ${zone === 'provincia' ? 'border-nk-gold bg-nk-gold/5' : 'border-nk-arena bg-white'}`}
+              >
+                <span className="text-nk-choco text-sm font-medium">Provincia</span>
+                <span className="text-nk-gold text-xs font-bold">S/20</span>
+              </button>
+            </div>
+          </div>
+
+          {/* Formulario */}
+          <div className="flex flex-col gap-3">
+            <Field label="NOMBRE COMPLETO" value={form.customerName} onChange={setField('customerName')} placeholder="Tu nombre" />
+            <Field label="TELÉFONO" type="tel" value={form.phone} onChange={setField('phone')} placeholder="999 999 999" />
+            <Field label="DIRECCIÓN" value={form.address} onChange={setField('address')} placeholder="Av. / Calle y número" />
+            <div className="grid grid-cols-2 gap-3">
+              <Field label="DISTRITO" value={form.district} onChange={setField('district')} placeholder="Distrito" />
+              <Field label="CIUDAD" value={form.city} onChange={setField('city')} placeholder="Ciudad" />
+            </div>
+            <Field label="REFERENCIA" value={form.reference} onChange={setField('reference')} placeholder="Cerca de..." optional />
+            <Field label="LINK DE GOOGLE MAPS" value={form.mapsLink} onChange={setField('mapsLink')} placeholder="Pega el link de tu ubicación" optional />
+            <p className="text-nk-muted text-[10px] leading-relaxed">
+              💡 Tip: abre Google Maps, marca tu ubicación, toca "Compartir" y pega el link acá para una entrega más precisa.
+            </p>
+          </div>
+        </>
+      )}
+    </div>
+  )
+}
+
 export default function CartDrawer() {
   const { items, total, count, isOpen, setIsOpen, removeItem, updateQty, clearCart } = useCart()
-  const { isAuthenticated, token, openLogin } = useAuth()
+  const { isAuthenticated, token, user, openLogin } = useAuth()
   const [paying, setPaying] = useState(false)
   const [paymentOk, setPaymentOk] = useState(false)
   const [payError, setPayError] = useState('')
 
-  // Ref para acceder a items/total/token dentro del callback global de Culqi
+  // Checkout: 'cart' (productos) -> 'shipping' (entrega) -> Culqi
+  const [step, setStep] = useState('cart')
+  const [fulfillment, setFulfillment] = useState('DELIVERY') // 'PICKUP' | 'DELIVERY'
+  const [zone, setZone] = useState('lima') // 'lima' | 'provincia'
+  const [form, setForm] = useState({
+    customerName: '', phone: '', address: '', district: '', city: '', reference: '', mapsLink: '',
+  })
+  const [formError, setFormError] = useState('')
+
+  // Costo de envío (debe coincidir con el backend: pickup 0, Lima 10, provincia 20)
+  const shippingCost = fulfillment === 'PICKUP' ? 0 : zone === 'provincia' ? 20 : 10
+  const grandTotal = total + shippingCost
+
+  // Prefill nombre con el del usuario
+  useEffect(() => {
+    if (user?.name && !form.customerName) {
+      setForm((f) => ({ ...f, customerName: user.name }))
+    }
+  }, [user]) // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Ref para acceder al estado dentro del callback global de Culqi
   const stateRef = useRef({})
-  stateRef.current = { items, total, token }
+  stateRef.current = { items, total, token, fulfillment, zone, form, grandTotal }
   // Evita abrir el checkout dos veces por doble-click
   const openingRef = useRef(false)
   // Evita procesar el mismo cobro dos veces
@@ -67,7 +183,7 @@ export default function CartDrawer() {
     setPaying(true)
     setPayError('')
     const tid = toast.loading('Procesando tu pago...')
-    const { items: cartItems, token: authToken } = stateRef.current
+    const { items: cartItems, token: authToken, fulfillment: ff, zone: z, form: f } = stateRef.current
     try {
       const res = await fetch(`${API}/orders`, {
         method: 'POST',
@@ -85,6 +201,17 @@ export default function CartDrawer() {
             qty: i.qty,
             price: i.price,
           })),
+          fulfillment: ff,
+          ...(ff === 'DELIVERY' ? {
+            zone: z,
+            customerName: f.customerName,
+            phone: f.phone,
+            address: f.address,
+            district: f.district,
+            city: f.city,
+            reference: f.reference,
+            mapsLink: f.mapsLink,
+          } : {}),
         }),
       })
       if (!res.ok) {
@@ -92,6 +219,7 @@ export default function CartDrawer() {
         throw new Error(err.message || 'Error al procesar el pago')
       }
       clearCart()
+      setStep('cart')
       setPaymentOk(true)
       toast.success('¡Pago realizado con éxito!', { id: tid })
     } catch (err) {
@@ -139,7 +267,7 @@ export default function CartDrawer() {
       return
     }
 
-    const { total: cartTotal, items: cartItems } = stateRef.current
+    const { items: cartItems, grandTotal: gt } = stateRef.current
     const qty = cartItems.reduce((acc, i) => acc + i.qty, 0)
 
     Culqi.publicKey = CULQI_KEY
@@ -147,13 +275,25 @@ export default function CartDrawer() {
       title: 'NUDA KETO',
       currency: 'PEN',
       description: `Pedido NUDA KETO (${qty} producto${qty > 1 ? 's' : ''})`,
-      amount: Math.round(cartTotal * 100), // céntimos
+      amount: Math.round(gt * 100), // céntimos (productos + envío)
     })
     Culqi.open()
   }, [])
 
+  // Valida el formulario de envío antes de continuar
+  const validateShipping = () => {
+    if (fulfillment === 'PICKUP') return true
+    if (!form.customerName.trim()) { setFormError('Ingresa tu nombre'); return false }
+    if (!form.phone.trim()) { setFormError('Ingresa tu teléfono'); return false }
+    if (!form.address.trim()) { setFormError('Ingresa tu dirección'); return false }
+    if (!form.district.trim()) { setFormError('Ingresa tu distrito'); return false }
+    setFormError('')
+    return true
+  }
+
   const handleCulqiPay = () => {
     if (items.length === 0 || paying) return
+    if (!validateShipping()) return
     // Bloqueo anti doble-click (se libera a los 2.5s o al cerrar/pagar)
     if (openingRef.current) return
     openingRef.current = true
@@ -166,6 +306,8 @@ export default function CartDrawer() {
     }
     openCulqi()
   }
+
+  const setField = (k) => (e) => setForm((f) => ({ ...f, [k]: e.target.value }))
 
   return (
     <AnimatePresence>
@@ -188,14 +330,27 @@ export default function CartDrawer() {
           >
             {/* Header */}
             <div className="flex items-center justify-between px-5 sm:px-6 py-4 sm:py-5 border-b border-nk-arena">
-              <div>
-                <h2 style={{ fontFamily: "'Playfair Display', serif" }} className="text-xl font-bold text-nk-choco">Carrito</h2>
-                <p style={{ fontFamily: "'DM Mono', monospace" }} className="text-nk-muted text-[10px] tracking-wider mt-0.5">
-                  {count} {count === 1 ? 'PRODUCTO' : 'PRODUCTOS'}
-                </p>
+              <div className="flex items-center gap-2">
+                {step === 'shipping' && !paymentOk && (
+                  <button
+                    onClick={() => { setStep('cart'); setFormError('') }}
+                    className="w-8 h-8 rounded-full border border-nk-arena flex items-center justify-center text-nk-muted hover:text-nk-choco hover:border-nk-choco transition-colors mr-1"
+                    aria-label="Volver"
+                  >
+                    <svg viewBox="0 0 24 24" className="w-4 h-4 fill-none stroke-current stroke-2"><path strokeLinecap="round" strokeLinejoin="round" d="M15 18l-6-6 6-6"/></svg>
+                  </button>
+                )}
+                <div>
+                  <h2 style={{ fontFamily: "'Playfair Display', serif" }} className="text-xl font-bold text-nk-choco">
+                    {step === 'shipping' ? 'Datos de entrega' : 'Carrito'}
+                  </h2>
+                  <p style={{ fontFamily: "'DM Mono', monospace" }} className="text-nk-muted text-[10px] tracking-wider mt-0.5">
+                    {step === 'shipping' ? 'PASO 2 DE 2' : `${count} ${count === 1 ? 'PRODUCTO' : 'PRODUCTOS'}`}
+                  </p>
+                </div>
               </div>
               <button
-                onClick={() => { setIsOpen(false); setPaymentOk(false) }}
+                onClick={() => { setIsOpen(false); setPaymentOk(false); setStep('cart') }}
                 className="w-9 h-9 rounded-full border border-nk-arena flex items-center justify-center text-nk-muted hover:text-nk-choco hover:border-nk-choco transition-colors"
               >
                 <IconClose />
@@ -211,23 +366,45 @@ export default function CartDrawer() {
                   </svg>
                 </div>
                 <h3 style={{ fontFamily: "'Playfair Display', serif" }} className="text-2xl font-bold text-nk-choco">
-                  ¡Pago recibido!
+                  ¡Gracias por tu compra!
                 </h3>
                 <p className="text-nk-muted text-sm leading-relaxed">
-                  Tu pedido fue procesado correctamente. Te contactaremos pronto para coordinar la entrega.
+                  Tu pago fue confirmado y tu pedido ya está en camino. 🎉<br />
+                  Te enviaremos los detalles a tu correo y te contactaremos para coordinar la entrega.
                 </p>
-                <button
-                  onClick={() => { setPaymentOk(false); setIsOpen(false) }}
-                  className="bg-nk-choco text-nk-ivory px-6 py-3 rounded-full text-sm font-semibold hover:bg-nk-gold transition-colors"
-                >
-                  Volver al inicio
-                </button>
+                <div className="flex flex-col gap-2 w-full max-w-xs">
+                  {isAuthenticated && (
+                    <Link
+                      to="/mis-compras"
+                      onClick={() => { setPaymentOk(false); setIsOpen(false) }}
+                      className="bg-nk-choco text-nk-ivory px-6 py-3 rounded-full text-sm font-semibold hover:bg-nk-gold transition-colors"
+                    >
+                      Ver mis compras
+                    </Link>
+                  )}
+                  <button
+                    onClick={() => { setPaymentOk(false); setIsOpen(false) }}
+                    className={`px-6 py-3 rounded-full text-sm font-semibold transition-colors ${
+                      isAuthenticated
+                        ? 'border-2 border-nk-arena text-nk-choco hover:border-nk-choco'
+                        : 'bg-nk-choco text-nk-ivory hover:bg-nk-gold'
+                    }`}
+                  >
+                    Seguir comprando
+                  </button>
+                </div>
               </div>
             ) : (
               <>
-                {/* Items */}
+                {/* Items / Formulario de envío */}
                 <div className="flex-1 overflow-y-auto px-5 sm:px-6 py-4">
-                  {items.length === 0 ? (
+                  {step === 'shipping' ? (
+                    <ShippingStep
+                      fulfillment={fulfillment} setFulfillment={setFulfillment}
+                      zone={zone} setZone={setZone}
+                      form={form} setField={setField}
+                    />
+                  ) : items.length === 0 ? (
                     <div className="flex flex-col items-center justify-center h-full gap-4 text-nk-muted">
                       <IconEmptyCart />
                       <p style={{ fontFamily: "'Playfair Display', serif" }} className="text-lg text-nk-choco/50">
@@ -302,36 +479,59 @@ export default function CartDrawer() {
                   )}
                 </div>
 
-                {/* Footer con botones de pago */}
-                {items.length > 0 && (
+                {/* Footer */}
+                {items.length > 0 && step === 'cart' && (
                   <div className="px-5 sm:px-6 py-4 sm:py-5 border-t border-nk-arena bg-white flex flex-col gap-3">
-                    {/* Total */}
                     <div className="flex justify-between items-center">
-                      <span className="text-nk-muted text-sm">Total</span>
+                      <span className="text-nk-muted text-sm">Subtotal</span>
                       <span style={{ fontFamily: "'Playfair Display', serif" }} className="text-2xl font-black text-nk-choco">
                         S/{total.toFixed(2)}
                       </span>
                     </div>
+                    <p className="text-nk-muted text-[11px] text-center">El envío se calcula en el siguiente paso</p>
 
-                    {/* Error de pago */}
-                    {payError && (
+                    <button
+                      onClick={() => setStep('shipping')}
+                      className="flex items-center justify-center gap-2 w-full py-4 rounded-2xl bg-nk-choco hover:bg-nk-gold text-nk-ivory font-semibold text-sm transition-all duration-300"
+                    >
+                      Continuar
+                      <svg viewBox="0 0 24 24" className="w-4 h-4 fill-none stroke-current stroke-2"><path strokeLinecap="round" strokeLinejoin="round" d="M9 18l6-6-6-6"/></svg>
+                    </button>
+
+                    <button onClick={clearCart} className="text-nk-muted text-xs text-center hover:text-nk-choco transition-colors">
+                      Vaciar carrito
+                    </button>
+                  </div>
+                )}
+
+                {/* Footer paso envío: desglose + pagar */}
+                {items.length > 0 && step === 'shipping' && (
+                  <div className="px-5 sm:px-6 py-4 sm:py-5 border-t border-nk-arena bg-white flex flex-col gap-2.5">
+                    <div className="flex justify-between text-sm">
+                      <span className="text-nk-muted">Productos</span>
+                      <span className="text-nk-choco font-semibold">S/{total.toFixed(2)}</span>
+                    </div>
+                    <div className="flex justify-between text-sm">
+                      <span className="text-nk-muted">Envío {fulfillment === 'PICKUP' ? '(recojo en tienda)' : zone === 'provincia' ? '(provincia)' : '(Lima)'}</span>
+                      <span className="text-nk-choco font-semibold">{shippingCost === 0 ? 'Gratis' : `S/${shippingCost.toFixed(2)}`}</span>
+                    </div>
+                    <div className="flex justify-between items-center pt-1 border-t border-nk-arena">
+                      <span className="text-nk-choco text-sm font-semibold">Total</span>
+                      <span style={{ fontFamily: "'Playfair Display', serif" }} className="text-2xl font-black text-nk-choco">
+                        S/{grandTotal.toFixed(2)}
+                      </span>
+                    </div>
+
+                    {(formError || payError) && (
                       <p className="text-red-500 text-xs bg-red-50 border border-red-200 rounded-xl px-3 py-2">
-                        {payError}
+                        {formError || payError}
                       </p>
                     )}
 
-                    {/* Separador visual */}
-                    <div className="flex items-center gap-3">
-                      <div className="flex-1 h-px bg-nk-arena" />
-                      <span style={{ fontFamily: "'DM Mono', monospace" }} className="text-nk-muted text-[10px] tracking-wider">MÉTODOS DE PAGO</span>
-                      <div className="flex-1 h-px bg-nk-arena" />
-                    </div>
-
-                    {/* Botón principal: Culqi (tarjeta) */}
                     <button
                       onClick={handleCulqiPay}
                       disabled={paying}
-                      className="flex items-center justify-center gap-2 w-full py-4 rounded-2xl bg-nk-choco hover:bg-nk-gold text-nk-ivory font-semibold text-sm transition-all duration-300 disabled:opacity-60 disabled:cursor-not-allowed"
+                      className="mt-1 flex items-center justify-center gap-2 w-full py-4 rounded-2xl bg-nk-choco hover:bg-nk-gold text-nk-ivory font-semibold text-sm transition-all duration-300 disabled:opacity-60 disabled:cursor-not-allowed"
                     >
                       {paying ? (
                         <>
@@ -344,13 +544,9 @@ export default function CartDrawer() {
                       ) : (
                         <>
                           <IconCard />
-                          Pagar S/{total.toFixed(2)}
+                          Pagar S/{grandTotal.toFixed(2)}
                         </>
                       )}
-                    </button>
-
-                    <button onClick={clearCart} className="text-nk-muted text-xs text-center hover:text-nk-choco transition-colors">
-                      Vaciar carrito
                     </button>
                   </div>
                 )}
