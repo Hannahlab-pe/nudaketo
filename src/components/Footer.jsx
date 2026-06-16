@@ -19,8 +19,8 @@ const IconFacebook = () => (
 )
 
 const navLinks = [
-  { label: 'Productos', href: '/#productos' },
-  { label: 'Nosotros', href: '/#nosotros' },
+  { label: 'Tienda', href: '/tienda' },
+  { label: 'Sobre Nosotros', href: '/#nosotros' },
   { label: 'Ingredientes', href: '/#ingredientes' },
 ]
 
@@ -35,7 +35,9 @@ const productLinks = [
   { label: 'Galletón Chips & Almendras', href: '/producto/galleton-chips-almendras' },
   { label: 'Galletón Doble Cacao', href: '/producto/galleton-doble-cacao' },
   { label: 'Galletón Vainilla Chips', href: '/producto/galleton-vainilla-chips' },
-  { label: 'Barra Cacao Nuts', href: '/producto/barra-cacao-nuts' },
+  { label: 'Galletón Cacao Nibs', href: '/producto/galleton-cacao-nibs' },
+  { label: 'Cacao Nuts Bar', href: '/producto/barra-cacao-nuts' },
+  { label: 'Almond Bar', href: '/producto/almond-bar' },
   { label: 'Keto Bites Almendras & Sal', href: '/producto/keto-bites-almendras-sal' },
 ]
 
@@ -156,9 +158,22 @@ export default function Footer() {
 
       {/* Bottom bar */}
       <div className="max-w-7xl mx-auto px-5 sm:px-6 lg:px-10 py-4 sm:py-5 flex flex-col sm:flex-row items-center justify-between gap-3">
-        <p style={{ fontFamily: "'DM Mono', monospace" }} className="text-nk-ivory/25 text-[10px] sm:text-[11px] tracking-wider text-center sm:text-left">
-          © 2026 NUDA KETO. TODOS LOS DERECHOS RESERVADOS.
-        </p>
+        <div className="flex flex-col items-center sm:items-start gap-1">
+          <p style={{ fontFamily: "'DM Mono', monospace" }} className="text-nk-ivory/25 text-[10px] sm:text-[11px] tracking-wider text-center sm:text-left">
+            © 2026 NUDA KETO. TODOS LOS DERECHOS RESERVADOS.
+          </p>
+          <p style={{ fontFamily: "'DM Mono', monospace" }} className="text-nk-ivory/25 text-[10px] sm:text-[11px] tracking-wider">
+            Powered by{' '}
+            <a
+              href="https://www.hannahlab.com/inicio"
+              target="_blank"
+              rel="noreferrer"
+              className="text-nk-gold/70 hover:text-nk-gold transition-colors font-semibold"
+            >
+              HannahLab
+            </a>
+          </p>
+        </div>
         <div className="flex items-center gap-2 sm:gap-3 flex-wrap justify-center">
           {['Sin azúcar', 'Gluten free', 'Keto'].map((label) => (
             <span
