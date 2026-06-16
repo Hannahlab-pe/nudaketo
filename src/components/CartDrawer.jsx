@@ -344,7 +344,7 @@ export default function CartDrawer() {
                       ) : (
                         <>
                           <IconCard />
-                          Pagar con tarjeta
+                          Pagar S/{total.toFixed(2)}
                         </>
                       )}
                     </button>
