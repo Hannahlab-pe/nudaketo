@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from 'react'
 import { useParams, Link } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import { IconStore, IconDelivery, IconPin } from '../components/icons'
+import { STORE } from '../config/store'
 
 const API = import.meta.env.VITE_API_URL || 'http://localhost:3000'
 
@@ -117,7 +118,13 @@ export default function OrderDetailPage() {
             <div className="rounded-2xl border border-nk-arena bg-white p-5 sm:p-6">
               <p style={{ fontFamily: "'DM Mono', monospace" }} className="text-nk-muted text-[10px] tracking-[3px] mb-3">ENTREGA</p>
               {order.fulfillment === 'PICKUP' ? (
-                <p className="text-sm text-nk-choco flex items-center gap-2"><IconStore /> Recojo en tienda</p>
+                <div className="text-sm flex flex-col gap-1">
+                  <p className="text-nk-choco flex items-center gap-2"><IconStore /> Recojo en tienda</p>
+                  <p className="text-nk-choco font-semibold mt-1">{STORE.name}</p>
+                  <p className="text-nk-muted">{STORE.address}</p>
+                  <p className="text-nk-muted text-xs">{STORE.hours}</p>
+                  <a href={STORE.mapsLink} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1.5 text-nk-gold font-semibold text-xs mt-1"><IconPin className="w-3.5 h-3.5" /> Ver en Google Maps</a>
+                </div>
               ) : (
                 <div className="text-sm text-nk-choco flex flex-col gap-1">
                   <p className="flex items-center gap-2"><IconDelivery /> Envío a domicilio</p>

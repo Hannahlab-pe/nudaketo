@@ -40,6 +40,7 @@ export default function Navbar() {
   const [menuOpen, setMenuOpen] = useState(false)
   const { count, setIsOpen } = useCart()
   const { user, isAdmin, logout, openLogin } = useAuth()
+  const isSeller = user?.role === 'VENDEDOR'
 
   useEffect(() => {
     const handler = () => setScrolled(window.scrollY > 60)
@@ -110,6 +111,17 @@ export default function Navbar() {
             >
               <svg viewBox="0 0 24 24" className="w-3.5 h-3.5 fill-none stroke-current stroke-2"><path strokeLinecap="round" strokeLinejoin="round" d="M3 3h7v7H3zM14 3h7v7h-7zM14 14h7v7h-7zM3 14h7v7H3z"/></svg>
               Panel
+            </Link>
+          )}
+
+          {/* Panel vendedor */}
+          {isSeller && (
+            <Link
+              to="/vendedor"
+              className="flex items-center gap-1.5 bg-nk-gold/15 border border-nk-gold/40 text-nk-choco hover:bg-nk-gold/25 px-3 py-2 rounded-full text-xs font-semibold transition-all"
+            >
+              <svg viewBox="0 0 24 24" className="w-3.5 h-3.5 fill-none stroke-current stroke-2"><path strokeLinecap="round" strokeLinejoin="round" d="M3 3v18h18M7 14l4-4 4 4 5-6"/></svg>
+              Mis ventas
             </Link>
           )}
 
@@ -195,6 +207,12 @@ export default function Navbar() {
                 <Link to="/admin" onClick={() => setMenuOpen(false)} className="flex items-center gap-2 bg-nk-gold/15 border border-nk-gold/40 text-nk-choco px-4 py-2.5 rounded-full text-sm font-semibold">
                   <svg viewBox="0 0 24 24" className="w-4 h-4 fill-none stroke-current stroke-2"><path strokeLinecap="round" strokeLinejoin="round" d="M3 3h7v7H3zM14 3h7v7h-7zM14 14h7v7h-7zM3 14h7v7H3z"/></svg>
                   Panel de administración
+                </Link>
+              )}
+              {isSeller && (
+                <Link to="/vendedor" onClick={() => setMenuOpen(false)} className="flex items-center gap-2 bg-nk-gold/15 border border-nk-gold/40 text-nk-choco px-4 py-2.5 rounded-full text-sm font-semibold">
+                  <svg viewBox="0 0 24 24" className="w-4 h-4 fill-none stroke-current stroke-2"><path strokeLinecap="round" strokeLinejoin="round" d="M3 3v18h18M7 14l4-4 4 4 5-6"/></svg>
+                  Mis ventas
                 </Link>
               )}
               {user ? (

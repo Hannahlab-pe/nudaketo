@@ -157,10 +157,16 @@ export default function AdminPage() {
               Pedidos
             </h1>
           </div>
-          <button onClick={load} className="self-start sm:self-auto flex items-center gap-2 border-2 border-nk-arena hover:border-nk-choco text-nk-choco px-4 py-2.5 rounded-full text-sm font-medium transition-colors">
-            <svg viewBox="0 0 24 24" className="w-4 h-4 fill-none stroke-current stroke-2"><path strokeLinecap="round" strokeLinejoin="round" d="M4 4v5h5M20 20v-5h-5M4 9a8 8 0 0114-3M20 15a8 8 0 01-14 3"/></svg>
-            Actualizar
-          </button>
+          <div className="flex items-center gap-2 self-start sm:self-auto">
+            <Link to="/admin/vendedores" className="flex items-center gap-2 bg-nk-choco text-nk-ivory px-4 py-2.5 rounded-full text-sm font-semibold hover:bg-nk-gold transition-colors">
+              <svg viewBox="0 0 24 24" className="w-4 h-4 fill-none stroke-current stroke-2"><path strokeLinecap="round" strokeLinejoin="round" d="M17 20h5v-2a4 4 0 00-3-3.87M9 20H4v-2a4 4 0 013-3.87m6-1.13a4 4 0 10-4-4 4 4 0 004 4z"/></svg>
+              Vendedores
+            </Link>
+            <button onClick={load} className="flex items-center gap-2 border-2 border-nk-arena hover:border-nk-choco text-nk-choco px-4 py-2.5 rounded-full text-sm font-medium transition-colors">
+              <svg viewBox="0 0 24 24" className="w-4 h-4 fill-none stroke-current stroke-2"><path strokeLinecap="round" strokeLinejoin="round" d="M4 4v5h5M20 20v-5h-5M4 9a8 8 0 0114-3M20 15a8 8 0 01-14 3"/></svg>
+              Actualizar
+            </button>
+          </div>
         </div>
 
         {/* Métricas */}
@@ -311,6 +317,16 @@ export default function AdminPage() {
                       </li>
                     ))}
                   </ul>
+
+                  {/* Vendedor (si hubo código) */}
+                  {o.sellerCode && (
+                    <div className="mt-4 rounded-xl bg-nk-gold/10 border border-nk-gold/30 p-3 flex flex-wrap items-center justify-between gap-2 text-xs">
+                      <span className="text-nk-choco font-semibold">Vendedor: {o.sellerCode}</span>
+                      <span className="text-nk-muted">
+                        Descuento -S/{((o.discountCents || 0) / 100).toFixed(2)} · Comisión S/{((o.commissionCents || 0) / 100).toFixed(2)}
+                      </span>
+                    </div>
+                  )}
 
                   {/* Entrega */}
                   <div className="mt-4 rounded-xl bg-nk-ivory border border-nk-arena p-3.5">

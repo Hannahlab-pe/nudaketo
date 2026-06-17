@@ -21,6 +21,8 @@ import CheckoutPage from './pages/CheckoutPage'
 import PerfilPage from './pages/PerfilPage'
 import OrderDetailPage from './pages/OrderDetailPage'
 import AdminOrderDetailPage from './pages/AdminOrderDetailPage'
+import VendedorPage from './pages/VendedorPage'
+import AdminSellersPage from './pages/AdminSellersPage'
 import TermsPage from './pages/TermsPage'
 import PrivacyPage from './pages/PrivacyPage'
 import ReturnsPage from './pages/ReturnsPage'
@@ -84,6 +86,8 @@ function Layout() {
         <Route path="/tienda" element={<StorePage />} />
         <Route path="/admin" element={<AdminPage />} />
         <Route path="/admin/pedido/:id" element={<AdminOrderDetailPage />} />
+        <Route path="/admin/vendedores" element={<AdminSellersPage />} />
+        <Route path="/vendedor" element={<VendedorPage />} />
         <Route path="/mis-compras" element={<MisComprasPage />} />
         <Route path="/mis-compras/:id" element={<OrderDetailPage />} />
         <Route path="/checkout" element={<CheckoutPage />} />

@@ -4,6 +4,8 @@ import { toast } from 'sonner'
 import { useCart } from '../context/CartContext'
 import { useAuth } from '../context/AuthContext'
 import MapPicker, { parseLatLng } from '../components/MapPicker'
+import { IconPin } from '../components/icons'
+import { STORE } from '../config/store'
 
 const CULQI_KEY = import.meta.env.VITE_CULQI_PUBLIC_KEY || ''
 const API = import.meta.env.VITE_API_URL || 'http://localhost:3000'
@@ -13,6 +15,7 @@ export const SHIPPING_ZONES = [
   { id: 'lima', label: 'Lima Metropolitana', price: 9.5 },
   { id: 'provincia', label: 'Provincia', price: 20 },
 ]
+
 
 function waitForCulqi(timeout = 6000) {
   return new Promise((resolve, reject) => {
@@ -51,11 +54,44 @@ export default function CheckoutPage() {
   const [paying, setPaying] = useState(false)
   const [paymentOk, setPaymentOk] = useState(false)
 
+  // Código de vendedor
+  const [codeInput, setCodeInput] = useState('')
+  const [appliedCode, setAppliedCode] = useState(null) // { code, discountPct, sellerName }
+  const [codeError, setCodeError] = useState('')
+  const [validatingCode, setValidatingCode] = useState(false)
+
   const selectedZone = SHIPPING_ZONES.find((z) => z.id === zone) || SHIPPING_ZONES[0]
   const shippingCost = fulfillment === 'PICKUP' ? 0 : selectedZone.price
-  const grandTotal = total + shippingCost
+  const discount = appliedCode ? +(total * (appliedCode.discountPct || 0) / 100).toFixed(2) : 0
+  const grandTotal = Math.max(0, total - discount) + shippingCost
 
   const setField = (k) => (e) => setForm((f) => ({ ...f, [k]: e.target.value }))
+
+  const applyCode = async () => {
+    const code = codeInput.trim()
+    if (!code) return
+    setValidatingCode(true)
+    setCodeError('')
+    try {
+      const res = await fetch(`${API}/sellers/validate/${encodeURIComponent(code)}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      })
+      const data = await res.json()
+      if (data.valid) {
+        setAppliedCode({ code: data.code, discountPct: data.discountPct, sellerName: data.sellerName })
+        toast.success(`Código aplicado: ${data.discountPct}% de descuento`)
+      } else {
+        setAppliedCode(null)
+        setCodeError('Código no válido')
+      }
+    } catch {
+      setCodeError('No se pudo validar el código')
+    } finally {
+      setValidatingCode(false)
+    }
+  }
+
+  const removeCode = () => { setAppliedCode(null); setCodeInput(''); setCodeError('') }
 
   // Autocompleta el formulario con la dirección guardada del perfil
   useEffect(() => {
@@ -73,7 +109,7 @@ export default function CheckoutPage() {
   }, [user]) // eslint-disable-line react-hooks/exhaustive-deps
 
   const stateRef = useRef({})
-  stateRef.current = { items, token, fulfillment, zone, form, grandTotal, userEmail: user?.email }
+  stateRef.current = { items, token, fulfillment, zone, form, grandTotal, userEmail: user?.email, sellerCode: appliedCode?.code || null }
   const openingRef = useRef(false)
   const chargingRef = useRef(false)
 
@@ -82,7 +118,7 @@ export default function CheckoutPage() {
     chargingRef.current = true
     setPaying(true)
     const tid = toast.loading('Procesando tu pago...')
-    const { items: cartItems, token: authToken, fulfillment: ff, zone: z, form: f, userEmail } = stateRef.current
+    const { items: cartItems, token: authToken, fulfillment: ff, zone: z, form: f, userEmail, sellerCode } = stateRef.current
     // La confirmación va al correo de la cuenta (no al que se puso en el modal de Culqi)
     const email = userEmail || culqiEmail
     try {
@@ -94,6 +130,7 @@ export default function CheckoutPage() {
           email,
           items: cartItems.map((i) => ({ productId: i.id, sizeId: i.sizeId, name: i.name, qty: i.qty, price: i.price })),
           fulfillment: ff,
+          ...(sellerCode ? { sellerCode } : {}),
           ...(ff === 'DELIVERY' ? { zone: z, customerName: f.customerName, phone: f.phone, address: f.address, district: f.district, city: f.city, reference: f.reference, mapsLink: f.mapsLink } : {}),
         }),
       })
@@ -223,9 +260,22 @@ export default function CheckoutPage() {
             </div>
 
             {fulfillment === 'PICKUP' ? (
-              <div className="rounded-xl border border-nk-arena bg-white p-5 text-sm text-nk-muted leading-relaxed max-w-md">
-                <p className="text-nk-choco font-semibold mb-1">Recojo en tienda — Gratis</p>
-                Te contactaremos por correo para coordinar el día y hora de recojo.
+              <div className="rounded-xl border border-nk-arena bg-white p-5 max-w-md">
+                <p className="text-nk-choco font-semibold mb-3">Recojo en tienda — Gratis</p>
+                <div className="flex items-start gap-3">
+                  <span className="text-nk-gold mt-0.5"><IconPin /></span>
+                  <div className="text-sm">
+                    <p className="text-nk-choco font-semibold">{STORE.name}</p>
+                    <p className="text-nk-muted">{STORE.address}</p>
+                    <p className="text-nk-muted text-xs mt-1">{STORE.hours}</p>
+                    <a href={STORE.mapsLink} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1.5 text-nk-gold font-semibold text-xs mt-2 hover:underline">
+                      <IconPin className="w-3.5 h-3.5" /> Ver en Google Maps
+                    </a>
+                  </div>
+                </div>
+                <p className="text-nk-muted text-xs leading-relaxed mt-3 pt-3 border-t border-nk-arena">
+                  Te avisaremos por correo cuando tu pedido esté listo para recoger.
+                </p>
               </div>
             ) : (
               <>
@@ -287,8 +337,42 @@ export default function CheckoutPage() {
               ))}
             </ul>
 
+            {/* Código de vendedor */}
+            <div className="border-t border-nk-arena pt-3">
+              {appliedCode ? (
+                <div className="flex items-center justify-between bg-nk-olive/10 border border-nk-olive/30 rounded-xl px-3 py-2">
+                  <span className="text-nk-olive text-xs font-semibold">
+                    Código {appliedCode.code} · {appliedCode.discountPct}% dto.
+                  </span>
+                  <button onClick={removeCode} className="text-nk-muted hover:text-nk-choco text-xs underline">Quitar</button>
+                </div>
+              ) : (
+                <div>
+                  <div className="flex gap-2">
+                    <input
+                      value={codeInput}
+                      onChange={(e) => { setCodeInput(e.target.value.toUpperCase()); setCodeError('') }}
+                      placeholder="Código de vendedor"
+                      className="flex-1 px-3 py-2 rounded-xl border-2 border-nk-arena focus:border-nk-gold focus:outline-none bg-white text-nk-choco text-sm placeholder:text-nk-arena uppercase"
+                    />
+                    <button
+                      onClick={applyCode}
+                      disabled={validatingCode || !codeInput.trim()}
+                      className="px-4 py-2 rounded-xl bg-nk-choco text-nk-ivory text-xs font-semibold hover:bg-nk-gold transition-colors disabled:opacity-50"
+                    >
+                      {validatingCode ? '...' : 'Aplicar'}
+                    </button>
+                  </div>
+                  {codeError && <p className="text-red-500 text-[11px] mt-1.5">{codeError}</p>}
+                </div>
+              )}
+            </div>
+
             <div className="border-t border-nk-arena pt-3 flex flex-col gap-2 text-sm">
               <div className="flex justify-between"><span className="text-nk-muted">Productos</span><span className="text-nk-choco font-semibold">S/{total.toFixed(2)}</span></div>
+              {discount > 0 && (
+                <div className="flex justify-between"><span className="text-nk-olive">Descuento ({appliedCode.discountPct}%)</span><span className="text-nk-olive font-semibold">-S/{discount.toFixed(2)}</span></div>
+              )}
               <div className="flex justify-between"><span className="text-nk-muted">Envío {fulfillment === 'PICKUP' ? '(recojo)' : ''}</span><span className="text-nk-choco font-semibold">{shippingCost === 0 ? 'Gratis' : `S/${shippingCost.toFixed(2)}`}</span></div>
               <div className="flex justify-between items-center pt-2 border-t border-nk-arena">
                 <span className="text-nk-choco font-semibold">Total</span>
