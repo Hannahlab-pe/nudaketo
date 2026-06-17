@@ -352,7 +352,7 @@ export default function CheckoutPage() {
                     <input
                       value={codeInput}
                       onChange={(e) => { setCodeInput(e.target.value.toUpperCase()); setCodeError('') }}
-                      placeholder="Código de vendedor"
+                      placeholder="Código de descuento"
                       className="flex-1 px-3 py-2 rounded-xl border-2 border-nk-arena focus:border-nk-gold focus:outline-none bg-white text-nk-choco text-sm placeholder:text-nk-arena uppercase"
                     />
                     <button
