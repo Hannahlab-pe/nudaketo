@@ -45,7 +45,7 @@ function Field({ label, value, onChange, placeholder, type = 'text', optional = 
 export default function CheckoutPage() {
   const navigate = useNavigate()
   const { items, total, count, clearCart } = useCart()
-  const { isAuthenticated, token, user, openLogin, updateUser } = useAuth()
+  const { isAuthenticated, token, user, openLogin, openRegister, updateUser } = useAuth()
 
   const [fulfillment, setFulfillment] = useState('DELIVERY')
   const [zone, setZone] = useState('lima')
@@ -177,27 +177,40 @@ export default function CheckoutPage() {
   }, [])
 
   const validate = () => {
-    if (fulfillment === 'PICKUP') return true
-    if (!form.customerName.trim()) { setFormError('Ingresa tu nombre'); return false }
-    if (!form.phone.trim()) { setFormError('Ingresa tu teléfono'); return false }
-    if (!form.address.trim()) { setFormError('Ingresa tu dirección'); return false }
-    if (!form.district.trim()) { setFormError('Ingresa tu distrito'); return false }
+    if (fulfillment === 'PICKUP') { setFormError(''); return true }
+    let msg = ''
+    if (!form.customerName.trim()) msg = 'Ingresa tu nombre'
+    else if (!form.phone.trim()) msg = 'Ingresa tu teléfono'
+    else if (!form.address.trim()) msg = 'Ingresa tu dirección'
+    else if (!form.district.trim()) msg = 'Ingresa tu distrito'
+    if (msg) {
+      setFormError(msg)
+      toast.error(`Completa tus datos de envío: ${msg.toLowerCase()}`)
+      return false
+    }
     setFormError('')
     return true
   }
 
-  const handlePay = () => {
-    if (items.length === 0 || paying) return
+  const startPayment = () => {
     if (!validate()) return
     if (openingRef.current) return
     openingRef.current = true
     setTimeout(() => { openingRef.current = false }, 2500)
+    openCulqi()
+  }
+
+  const handlePay = () => {
+    if (paying) return
+    if (items.length === 0) { toast.error('Tu carrito está vacío'); return }
+    // 1) Debe estar logueado
     if (!isAuthenticated) {
-      toast.info('Inicia sesión para completar tu compra')
-      openLogin(() => openCulqi())
+      toast.info('Inicia sesión o crea tu cuenta para completar la compra')
+      openLogin(() => startPayment()) // tras loguearse, valida y abre el pago
       return
     }
-    openCulqi()
+    // 2) Logueado → valida datos y paga
+    startPayment()
   }
 
   // Pago exitoso
@@ -238,7 +251,20 @@ export default function CheckoutPage() {
           Seguir comprando
         </button>
 
-        <h1 style={{ fontFamily: "'Playfair Display', serif" }} className="text-3xl sm:text-4xl font-black text-nk-choco mb-8">Finalizar compra</h1>
+        <h1 style={{ fontFamily: "'Playfair Display', serif" }} className="text-3xl sm:text-4xl font-black text-nk-choco mb-6">Finalizar compra</h1>
+
+        {/* Aviso: necesita cuenta para comprar */}
+        {!isAuthenticated && (
+          <div className="mb-6 rounded-2xl border-2 border-nk-gold/40 bg-nk-gold/5 p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            <p className="text-nk-choco text-sm">
+              <strong>Para comprar necesitas una cuenta.</strong> Inicia sesión o crea una (es rápido) y completa tus datos de entrega.
+            </p>
+            <div className="flex gap-2 shrink-0">
+              <button onClick={() => openLogin()} className="bg-nk-choco text-nk-ivory px-4 py-2 rounded-full text-sm font-semibold hover:bg-nk-gold transition-colors">Ingresar</button>
+              <button onClick={() => openRegister()} className="border-2 border-nk-choco/30 text-nk-choco px-4 py-2 rounded-full text-sm font-semibold hover:border-nk-choco transition-colors">Crear cuenta</button>
+            </div>
+          </div>
+        )}
 
         <div className="grid lg:grid-cols-[1fr_380px] gap-8 items-start">
 
@@ -385,6 +411,8 @@ export default function CheckoutPage() {
             <button onClick={handlePay} disabled={paying} className="flex items-center justify-center gap-2 w-full py-4 rounded-2xl bg-nk-choco hover:bg-nk-gold text-nk-ivory font-semibold text-sm transition-all duration-300 disabled:opacity-60 disabled:cursor-not-allowed">
               {paying ? (
                 <><svg className="w-4 h-4 animate-spin" viewBox="0 0 24 24" fill="none"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"/></svg>Abriendo pago...</>
+              ) : !isAuthenticated ? (
+                <><svg viewBox="0 0 24 24" className="w-4 h-4 fill-none stroke-current stroke-2"><path strokeLinecap="round" strokeLinejoin="round" d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2M12 11a4 4 0 100-8 4 4 0 000 8z"/></svg>Inicia sesión para pagar</>
               ) : (
                 <><svg viewBox="0 0 24 24" className="w-4 h-4 fill-none stroke-current stroke-2"><rect x="1" y="4" width="22" height="16" rx="2"/><path d="M1 10h22"/></svg>Pagar S/{grandTotal.toFixed(2)}</>
               )}
