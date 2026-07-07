@@ -21,8 +21,8 @@ export const products = [
       'Ideal como snack saludable o acompañamiento de café',
     ],
     sizes: [
-      { id: 'ind', label: 'Individual', size: '45g', pieces: '1 galletón', price: 8.5 },
-      { id: 'pack', label: 'Pack x3', size: '135g', pieces: '3 galletones', price: 25.0 },
+      { id: 'ind', label: 'Individual', size: '45g', pieces: '1 galletón', price: 9.9 },
+      { id: 'pack', label: 'Pack x3', size: '135g', pieces: '3 galletones', price: 28.5 },
     ],
     badge: 'MÁS VENDIDO',
     accentClass: 'text-nk-gold',
@@ -54,8 +54,8 @@ export const products = [
       'Ideal para los amantes del chocolate',
     ],
     sizes: [
-      { id: 'ind', label: 'Individual', size: '45g', pieces: '1 galletón', price: 8.5 },
-      { id: 'pack', label: 'Pack x3', size: '135g', pieces: '3 galletones', price: 25.0 },
+      { id: 'ind', label: 'Individual', size: '45g', pieces: '1 galletón', price: 9.9 },
+      { id: 'pack', label: 'Pack x3', size: '135g', pieces: '3 galletones', price: 28.5 },
     ],
     badge: 'NUEVO',
     accentClass: 'text-nk-choco',
@@ -87,8 +87,8 @@ export const products = [
       'Ideal para snack, lonchera saludable o acompañamiento de café',
     ],
     sizes: [
-      { id: 'ind', label: 'Individual', size: '45g', pieces: '1 galletón', price: 8.5 },
-      { id: 'pack', label: 'Pack x3', size: '135g', pieces: '3 galletones', price: 25.0 },
+      { id: 'ind', label: 'Individual', size: '45g', pieces: '1 galletón', price: 9.9 },
+      { id: 'pack', label: 'Pack x3', size: '135g', pieces: '3 galletones', price: 28.5 },
     ],
     badge: null,
     accentClass: 'text-nk-olive',
@@ -120,8 +120,8 @@ export const products = [
       'Ideal como snack saludable o acompañamiento de café',
     ],
     sizes: [
-      { id: 'ind', label: 'Individual', size: '45g', pieces: '1 galletón', price: 8.5 },
-      { id: 'pack', label: 'Pack x3', size: '135g', pieces: '3 galletones', price: 25.0 },
+      { id: 'ind', label: 'Individual', size: '45g', pieces: '1 galletón', price: 9.9 },
+      { id: 'pack', label: 'Pack x3', size: '135g', pieces: '3 galletones', price: 28.5 },
     ],
     badge: null,
     accentClass: 'text-nk-choco',
@@ -153,7 +153,7 @@ export const products = [
       'Ideal para consumo diario o on-the-go',
     ],
     sizes: [
-      { id: 'ind', label: 'Individual', size: '35g', pieces: '1 barra', price: 10.0 },
+      { id: 'ind', label: 'Individual', size: '35g', pieces: '1 barra', price: 10.9 },
     ],
     badge: null,
     accentClass: 'text-nk-gold',
@@ -185,7 +185,7 @@ export const products = [
       'Ideal para snack, pre entrenamiento o consumo on-the-go',
     ],
     sizes: [
-      { id: 'ind', label: 'Individual', size: '35g', pieces: '1 barra', price: 10.0 },
+      { id: 'ind', label: 'Individual', size: '35g', pieces: '1 barra', price: 10.9 },
     ],
     badge: null,
     accentClass: 'text-nk-olive',
@@ -217,8 +217,8 @@ export const products = [
       'Ideal para antojitos sin culpa',
     ],
     sizes: [
-      { id: 'pack-141', label: 'Bolsa Grande', size: '141g', pieces: 'Varios bites', price: 28.0 },
-      { id: 'pack-70', label: 'Bolsa Pequeña', size: '70g', pieces: 'Varios bites', price: 14.0 },
+      { id: 'pack-141', label: 'Bolsa Grande', size: '141g', pieces: 'Varios bites', price: 31.9 },
+      { id: 'pack-70', label: 'Bolsa Pequeña', size: '70g', pieces: 'Varios bites', price: 15.9 },
     ],
     badge: 'NUEVO',
     accentClass: 'text-nk-olive',

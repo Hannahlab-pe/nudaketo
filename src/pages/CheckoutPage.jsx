@@ -60,8 +60,10 @@ export default function CheckoutPage() {
   const [codeError, setCodeError] = useState('')
   const [validatingCode, setValidatingCode] = useState(false)
 
+  const FREE_SHIPPING_THRESHOLD = 100
+  const freeShipping = total >= FREE_SHIPPING_THRESHOLD
   const selectedZone = SHIPPING_ZONES.find((z) => z.id === zone) || SHIPPING_ZONES[0]
-  const shippingCost = fulfillment === 'PICKUP' ? 0 : selectedZone.price
+  const shippingCost = fulfillment === 'PICKUP' || freeShipping ? 0 : selectedZone.price
   const discount = appliedCode ? +(total * (appliedCode.discountPct || 0) / 100).toFixed(2) : 0
   const grandTotal = Math.max(0, total - discount) + shippingCost
 
@@ -308,14 +310,23 @@ export default function CheckoutPage() {
                 {/* Zona */}
                 <div>
                   <p style={{ fontFamily: "'DM Mono', monospace" }} className="text-nk-muted text-[10px] tracking-[3px] mb-3">ZONA DE ENVÍO</p>
-                  <div className="grid grid-cols-2 gap-3 max-w-md">
-                    {SHIPPING_ZONES.map((z) => (
-                      <button key={z.id} onClick={() => setZone(z.id)} className={`flex items-center justify-between p-3.5 rounded-xl border-2 transition-all ${zone === z.id ? 'border-nk-gold bg-nk-gold/5' : 'border-nk-arena bg-white hover:border-nk-gold/50'}`}>
-                        <span className="text-nk-choco text-sm font-medium">{z.label}</span>
-                        <span className="text-nk-gold text-xs font-bold">S/{z.price.toFixed(2)}</span>
-                      </button>
-                    ))}
-                  </div>
+                  {freeShipping ? (
+                    <div className="rounded-xl border-2 border-nk-olive/40 bg-nk-olive/10 p-3.5 max-w-md text-sm text-nk-olive font-semibold">
+                      ¡Tienes envío gratis por tu compra mayor a S/100!
+                    </div>
+                  ) : (
+                    <>
+                      <div className="grid grid-cols-2 gap-3 max-w-md">
+                        {SHIPPING_ZONES.map((z) => (
+                          <button key={z.id} onClick={() => setZone(z.id)} className={`flex items-center justify-between p-3.5 rounded-xl border-2 transition-all ${zone === z.id ? 'border-nk-gold bg-nk-gold/5' : 'border-nk-arena bg-white hover:border-nk-gold/50'}`}>
+                            <span className="text-nk-choco text-sm font-medium">{z.label}</span>
+                            <span className="text-nk-gold text-xs font-bold">S/{z.price.toFixed(2)}</span>
+                          </button>
+                        ))}
+                      </div>
+                      <p className="text-nk-muted text-[11px] mt-2">Envío gratis por compras de S/100 a más.</p>
+                    </>
+                  )}
                 </div>
 
                 {/* Datos */}
@@ -399,7 +410,10 @@ export default function CheckoutPage() {
               {discount > 0 && (
                 <div className="flex justify-between"><span className="text-nk-olive">Descuento ({appliedCode.discountPct}%)</span><span className="text-nk-olive font-semibold">-S/{discount.toFixed(2)}</span></div>
               )}
-              <div className="flex justify-between"><span className="text-nk-muted">Envío {fulfillment === 'PICKUP' ? '(recojo)' : ''}</span><span className="text-nk-choco font-semibold">{shippingCost === 0 ? 'Gratis' : `S/${shippingCost.toFixed(2)}`}</span></div>
+              <div className="flex justify-between">
+                <span className="text-nk-muted">Envío {fulfillment === 'PICKUP' ? '(recojo)' : freeShipping ? '(compra +S/100)' : ''}</span>
+                <span className={shippingCost === 0 ? 'text-nk-olive font-semibold' : 'text-nk-choco font-semibold'}>{shippingCost === 0 ? 'Gratis' : `S/${shippingCost.toFixed(2)}`}</span>
+              </div>
               <div className="flex justify-between items-center pt-2 border-t border-nk-arena">
                 <span className="text-nk-choco font-semibold">Total</span>
                 <span style={{ fontFamily: "'Playfair Display', serif" }} className="text-2xl font-black text-nk-choco">S/{grandTotal.toFixed(2)}</span>

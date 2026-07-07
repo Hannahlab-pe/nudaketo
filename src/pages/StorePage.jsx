@@ -215,7 +215,7 @@ export default function StorePage() {
             Nuestra <span className="italic text-nk-gold">Tienda</span>
           </h1>
           <p className="text-nk-ivory/55 text-sm">
-            {products.length} productos · Sin azúcar añadida · Gluten free · Keto
+            {products.length} productos · Sin azúcar añadida · Gluten free · Envío gratis desde S/100
           </p>
         </div>
       </div>

@@ -187,12 +187,12 @@ export default function Hero() {
               >
                 <div className="flex flex-col">
                   <span style={{ fontFamily: "'DM Mono', monospace" }} className="text-nk-gold text-[9px] tracking-wider">PACK x3</span>
-                  <span style={{ fontFamily: "'Playfair Display', serif" }} className="text-nk-choco font-black text-lg leading-none">S/25.00</span>
+                  <span style={{ fontFamily: "'Playfair Display', serif" }} className="text-nk-choco font-black text-lg leading-none">S/28.50</span>
                 </div>
                 <div className="w-px h-8 bg-nk-arena" />
                 <div className="flex flex-col">
                   <span style={{ fontFamily: "'DM Mono', monospace" }} className="text-nk-gold text-[9px] tracking-wider">INDIVIDUAL</span>
-                  <span style={{ fontFamily: "'Playfair Display', serif" }} className="text-nk-choco font-black text-lg leading-none">S/8.50</span>
+                  <span style={{ fontFamily: "'Playfair Display', serif" }} className="text-nk-choco font-black text-lg leading-none">S/9.90</span>
                 </div>
               </motion.div>
             </motion.div>
