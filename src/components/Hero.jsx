@@ -33,9 +33,12 @@ export default function Hero() {
     const ctx = gsap.context(() => {
       // Revelado del título palabra por palabra con máscara
       const words = headlineRef.current.querySelectorAll('[data-word]')
+      // 150 y no 120: la máscara ahora tiene espacio abajo para los
+      // descendentes (la cola de la "j" de "mejor"), así que la palabra tiene
+      // que arrancar más abajo para seguir estando oculta antes de entrar.
       gsap.fromTo(
         words,
-        { yPercent: 120 },
+        { yPercent: 150 },
         { yPercent: 0, duration: 1, stagger: 0.09, ease: 'expo.out', delay: 0.25 }
       )
 
@@ -96,7 +99,14 @@ export default function Hero() {
           {/* Título con revelado GSAP por máscara */}
           <h1 ref={headlineRef} className="leading-none" style={{ fontFamily: "'Playfair Display', serif" }}>
             {headlineLines.map((line) => (
-              <span key={line.text} className="block overflow-hidden" style={{ paddingBottom: '0.05em' }}>
+              // El padding deja respirar a los descendentes dentro de la
+              // máscara; el margen negativo lo compensa para que el interlineado
+              // se vea igual de ajustado que antes.
+              <span
+                key={line.text}
+                className="block overflow-hidden"
+                style={{ paddingBottom: '0.22em', marginBottom: '-0.17em' }}
+              >
                 <span data-word className={`block text-[clamp(40px,9vw,96px)] font-black will-change-transform ${line.className}`}>
                   {line.text}
                 </span>
