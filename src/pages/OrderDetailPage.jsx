@@ -1,10 +1,9 @@
 import { useState, useEffect, useCallback } from 'react'
 import { useParams, Link } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
+import { apiFetch } from '../lib/api'
 import { IconStore, IconDelivery, IconPin } from '../components/icons'
 import { STORE } from '../config/store'
-
-const API = import.meta.env.VITE_API_URL || 'http://localhost:3000'
 
 const STEPS = [
   { id: 'PAID', label: 'Pagado' },
@@ -28,7 +27,7 @@ export default function OrderDetailPage() {
     if (!token) { setLoading(false); return }
     setLoading(true); setError('')
     try {
-      const res = await fetch(`${API}/orders/${id}`, { headers: { Authorization: `Bearer ${token}` } })
+      const res = await apiFetch(`/orders/${id}`)
       if (res.status === 404) throw new Error('Pedido no encontrado')
       if (!res.ok) throw new Error('No se pudo cargar el pedido')
       setOrder(await res.json())

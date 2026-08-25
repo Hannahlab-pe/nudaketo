@@ -1,8 +1,7 @@
 import { useState, useEffect, useCallback } from 'react'
 import { Link } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
-
-const API = import.meta.env.VITE_API_URL || 'http://localhost:3000'
+import { apiFetch } from '../lib/api'
 
 const statusLabels = {
   PAID: 'Pagado', PROCESSING: 'En preparación', SHIPPED: 'Enviado', DELIVERED: 'Entregado', CANCELLED: 'Cancelado',
@@ -24,7 +23,7 @@ export default function VendedorPage() {
     if (!token) { setLoading(false); return }
     setLoading(true); setError('')
     try {
-      const res = await fetch(`${API}/sellers/my-sales`, { headers: { Authorization: `Bearer ${token}` } })
+      const res = await apiFetch('/sellers/my-sales')
       if (res.status === 403) throw new Error('Esta sección es solo para vendedores.')
       if (!res.ok) throw new Error('No se pudieron cargar tus ventas.')
       setData(await res.json())

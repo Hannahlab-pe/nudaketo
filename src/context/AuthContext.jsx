@@ -1,14 +1,31 @@
-import { createContext, useContext, useState, useCallback, useRef } from 'react'
+import { createContext, useContext, useState, useCallback, useEffect, useRef } from 'react'
+import { toast } from 'sonner'
+import { apiFetch, isTokenExpired, setUnauthorizedHandler } from '../lib/api'
 
 const AuthContext = createContext(null)
 
-const API = import.meta.env.VITE_API_URL || 'http://localhost:3000'
+/**
+ * Lee la sesión guardada. Si el token ya venció la descarta, para no arrancar
+ * la app "logueada" con un token muerto.
+ */
+function readStoredSession() {
+  const token = localStorage.getItem('nk_token')
+  if (!token || isTokenExpired(token)) {
+    localStorage.removeItem('nk_token')
+    localStorage.removeItem('nk_user')
+    return { token: null, user: null }
+  }
+  try {
+    return { token, user: JSON.parse(localStorage.getItem('nk_user')) }
+  } catch {
+    return { token, user: null }
+  }
+}
 
 export function AuthProvider({ children }) {
-  const [user, setUser] = useState(() => {
-    try { return JSON.parse(localStorage.getItem('nk_user')) } catch { return null }
-  })
-  const [token, setToken] = useState(() => localStorage.getItem('nk_token') || null)
+  const [stored] = useState(readStoredSession)
+  const [user, setUser] = useState(stored.user)
+  const [token, setToken] = useState(stored.token)
   const [modalOpen, setModalOpen] = useState(false)
   const [modalMode, setModalMode] = useState('login')
   const successCb = useRef(null)
@@ -21,8 +38,9 @@ export function AuthProvider({ children }) {
   }
 
   const login = useCallback(async (email, password) => {
-    const res = await fetch(`${API}/auth/login`, {
+    const res = await apiFetch('/auth/login', {
       method: 'POST',
+      auth: false,
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ email, password }),
     })
@@ -36,8 +54,9 @@ export function AuthProvider({ children }) {
   }, [])
 
   const register = useCallback(async (name, email, password) => {
-    const res = await fetch(`${API}/auth/register`, {
+    const res = await apiFetch('/auth/register', {
       method: 'POST',
+      auth: false,
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ name, email, password }),
     })
@@ -68,10 +87,9 @@ export function AuthProvider({ children }) {
 
   // Actualiza el perfil en el backend (nombre/dirección)
   const saveProfile = useCallback(async (fields) => {
-    const t = localStorage.getItem('nk_token')
-    const res = await fetch(`${API}/auth/profile`, {
+    const res = await apiFetch('/auth/profile', {
       method: 'PATCH',
-      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${t}` },
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(fields),
     })
     if (!res.ok) {
@@ -109,6 +127,19 @@ export function AuthProvider({ children }) {
       setTimeout(fn, 100)
     }
   }, [])
+
+  // Token vencido: cierra la sesión y pide iniciar sesión de nuevo, en vez de
+  // dejar al usuario ante un "no se pudo cargar" sin explicación.
+  useEffect(() => {
+    setUnauthorizedHandler(() => {
+      // Varias peticiones en paralelo pueden dar 401 a la vez; solo la primera avisa.
+      if (!localStorage.getItem('nk_token')) return
+      logout()
+      toast.error('Tu sesión expiró. Vuelve a iniciar sesión.')
+      openLogin()
+    })
+    return () => setUnauthorizedHandler(null)
+  }, [logout, openLogin])
 
   return (
     <AuthContext.Provider

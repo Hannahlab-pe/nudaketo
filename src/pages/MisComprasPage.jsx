@@ -1,9 +1,8 @@
 import { useState, useEffect, useCallback } from 'react'
 import { Link } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
+import { apiFetch } from '../lib/api'
 import { IconStore, IconDelivery } from '../components/icons'
-
-const API = import.meta.env.VITE_API_URL || 'http://localhost:3000'
 
 const statusLabels = {
   PAID: { label: 'Pagado', cls: 'bg-nk-olive/15 text-nk-olive border-nk-olive/30' },
@@ -30,9 +29,7 @@ export default function MisComprasPage() {
     setLoading(true)
     setError('')
     try {
-      const res = await fetch(`${API}/orders`, {
-        headers: { Authorization: `Bearer ${token}` },
-      })
+      const res = await apiFetch('/orders')
       if (!res.ok) throw new Error('No se pudieron cargar tus compras.')
       setOrders(await res.json())
     } catch (err) {

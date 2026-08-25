@@ -2,9 +2,8 @@ import { useState, useEffect, useCallback } from 'react'
 import { useParams, Link } from 'react-router-dom'
 import { toast } from 'sonner'
 import { useAuth } from '../context/AuthContext'
+import { apiFetch, SessionExpiredError } from '../lib/api'
 import { IconStore, IconDelivery, IconPin, IconChat } from '../components/icons'
-
-const API = import.meta.env.VITE_API_URL || 'http://localhost:3000'
 
 const STATUSES = [
   { id: 'PAID', label: 'Pagado' },
@@ -30,7 +29,7 @@ export default function AdminOrderDetailPage() {
     if (!token) { setLoading(false); return }
     setLoading(true); setError('')
     try {
-      const res = await fetch(`${API}/orders/${id}`, { headers: { Authorization: `Bearer ${token}` } })
+      const res = await apiFetch(`/orders/${id}`)
       if (res.status === 404) throw new Error('Pedido no encontrado')
       if (res.status === 403) throw new Error('No autorizado')
       if (!res.ok) throw new Error('No se pudo cargar el pedido')
@@ -45,16 +44,16 @@ export default function AdminOrderDetailPage() {
     const prev = order.status
     setOrder((o) => ({ ...o, status }))
     try {
-      const res = await fetch(`${API}/orders/${id}/status`, {
+      const res = await apiFetch(`/orders/${id}/status`, {
         method: 'PATCH',
-        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ status }),
       })
       if (!res.ok) throw new Error()
       toast.success('Estado actualizado')
-    } catch {
+    } catch (err) {
       setOrder((o) => ({ ...o, status: prev }))
-      toast.error('No se pudo actualizar')
+      if (!(err instanceof SessionExpiredError)) toast.error('No se pudo actualizar')
     } finally { setSaving(false) }
   }
 

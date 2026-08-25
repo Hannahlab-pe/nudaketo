@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import { toast } from 'sonner'
 import { useAuth } from '../context/AuthContext'
+import { SessionExpiredError } from '../lib/api'
 import MapPicker, { parseLatLng } from '../components/MapPicker'
 
 function Field({ label, value, onChange, placeholder, type = 'text', optional = false }) {
@@ -40,7 +41,7 @@ export default function PerfilPage() {
       await saveProfile(form)
       toast.success('Datos guardados ✓')
     } catch (err) {
-      toast.error(err.message || 'No se pudo guardar')
+      if (!(err instanceof SessionExpiredError)) toast.error(err.message || 'No se pudo guardar')
     } finally {
       setSaving(false)
     }

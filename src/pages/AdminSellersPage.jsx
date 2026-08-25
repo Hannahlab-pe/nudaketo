@@ -3,8 +3,7 @@ import { Link } from 'react-router-dom'
 import { Dialog, DialogPanel, DialogTitle, DialogBackdrop } from '@headlessui/react'
 import { toast } from 'sonner'
 import { useAuth } from '../context/AuthContext'
-
-const API = import.meta.env.VITE_API_URL || 'http://localhost:3000'
+import { apiFetch, SessionExpiredError } from '../lib/api'
 
 const empty = { name: '', email: '', password: '', code: '', discountPct: 5, commissionPct: 10 }
 
@@ -21,7 +20,7 @@ export default function AdminSellersPage() {
     if (!token) { setLoading(false); return }
     setLoading(true); setError('')
     try {
-      const res = await fetch(`${API}/sellers`, { headers: { Authorization: `Bearer ${token}` } })
+      const res = await apiFetch('/sellers')
       if (res.status === 403) throw new Error('No autorizado')
       if (!res.ok) throw new Error('No se pudieron cargar los vendedores')
       setSellers(await res.json())
@@ -41,9 +40,9 @@ export default function AdminSellersPage() {
     }
     setCreating(true)
     try {
-      const res = await fetch(`${API}/sellers`, {
+      const res = await apiFetch('/sellers', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           ...form,
           discountPct: Number(form.discountPct),
@@ -57,7 +56,7 @@ export default function AdminSellersPage() {
       toast.success('Vendedor creado')
       setForm(empty); setShowForm(false); load()
     } catch (err) {
-      toast.error(err.message)
+      if (!(err instanceof SessionExpiredError)) toast.error(err.message)
     } finally { setCreating(false) }
   }
 

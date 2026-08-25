@@ -2,9 +2,8 @@ import { useState, useEffect, useCallback, useMemo } from 'react'
 import { Link } from 'react-router-dom'
 import { toast } from 'sonner'
 import { useAuth } from '../context/AuthContext'
+import { apiFetch, SessionExpiredError } from '../lib/api'
 import { IconStore, IconDelivery, IconPin, IconChat } from '../components/icons'
-
-const API = import.meta.env.VITE_API_URL || 'http://localhost:3000'
 
 const STATUS_OPTIONS = [
   { id: 'PAID', label: 'Pagado' },
@@ -43,9 +42,7 @@ export default function AdminPage() {
     setLoading(true)
     setError('')
     try {
-      const res = await fetch(`${API}/orders/all`, {
-        headers: { Authorization: `Bearer ${token}` },
-      })
+      const res = await apiFetch('/orders/all')
       if (res.status === 403) throw new Error('No tienes permisos para ver este panel.')
       if (!res.ok) throw new Error('No se pudieron cargar los pedidos.')
       setOrders(await res.json())
@@ -62,14 +59,15 @@ export default function AdminPage() {
     // Optimista: actualiza la UI al instante
     setOrders((prev) => prev.map((o) => (o.id === orderId ? { ...o, status } : o)))
     try {
-      const res = await fetch(`${API}/orders/${orderId}/status`, {
+      const res = await apiFetch(`/orders/${orderId}/status`, {
         method: 'PATCH',
-        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ status }),
       })
       if (!res.ok) throw new Error()
       toast.success('Estado actualizado')
-    } catch {
+    } catch (err) {
+      if (err instanceof SessionExpiredError) return
       toast.error('No se pudo actualizar el estado')
       load()
     }
