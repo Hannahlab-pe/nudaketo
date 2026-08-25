@@ -1,4 +1,5 @@
 import { Link } from 'react-router-dom'
+import { products, categories } from '../data/products'
 
 const IconInstagram = () => (
   <svg viewBox="0 0 24 24" className="w-4 h-4 fill-none stroke-current stroke-1.5">
@@ -31,14 +32,16 @@ const legalLinks = [
   { label: 'Libro de Reclamaciones', href: '/libro-de-reclamaciones' },
 ]
 
+// Categorías reales del catálogo + enlace a la tienda completa
 const productLinks = [
-  { label: 'Galletón Chips & Almendras', href: '/producto/galleton-chips-almendras' },
-  { label: 'Galletón Doble Cacao', href: '/producto/galleton-doble-cacao' },
-  { label: 'Galletón Vainilla Chips', href: '/producto/galleton-vainilla-chips' },
-  { label: 'Galletón Cacao Nibs', href: '/producto/galleton-cacao-nibs' },
-  { label: 'Cacao Nuts Bar', href: '/producto/barra-cacao-nuts' },
-  { label: 'Almond Bar', href: '/producto/almond-bar' },
-  { label: 'Keto Bites Almendras & Sal', href: '/producto/keto-bites-almendras-sal' },
+  ...categories
+    .filter((c) => c.id !== 'all')
+    .map((c) => ({
+      label: c.label,
+      href: `/tienda?categoria=${c.id}`,
+      count: products.filter((p) => p.category === c.id).length,
+    })),
+  { label: 'Ver toda la tienda', href: '/tienda' },
 ]
 
 export default function Footer() {
@@ -88,9 +91,10 @@ export default function Footer() {
           <div className="flex flex-col gap-3 sm:gap-4">
             <p style={{ fontFamily: "'DM Mono', monospace" }} className="text-nk-gold text-[10px] tracking-[3px]">PRODUCTOS</p>
             <nav className="flex flex-col gap-2 sm:gap-2.5">
-              {productLinks.map(({ label, href }) => (
+              {productLinks.map(({ label, href, count }) => (
                 <Link key={label} to={href} className="text-nk-ivory/55 hover:text-nk-ivory text-xs sm:text-sm transition-colors leading-snug">
                   {label}
+                  {count != null && <span className="text-nk-ivory/25 ml-1.5">{count}</span>}
                 </Link>
               ))}
             </nav>

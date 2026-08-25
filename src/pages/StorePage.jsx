@@ -1,7 +1,7 @@
 import { useState, useMemo, useRef } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useSearchParams } from 'react-router-dom'
 import { motion, AnimatePresence } from 'motion/react'
-import { products, categories } from '../data/products'
+import { products, categories, minPrice } from '../data/products'
 import { useCart } from '../context/CartContext'
 import TiltCard from '../components/effects/TiltCard'
 
@@ -25,9 +25,9 @@ const IconX = () => (
     <path strokeLinecap="round" d="M6 18L18 6M6 6l12 12"/>
   </svg>
 )
-const IconFilter = () => (
-  <svg viewBox="0 0 24 24" className="w-4 h-4 fill-none stroke-current stroke-2">
-    <path strokeLinecap="round" d="M3 6h18M7 12h10M11 18h2"/>
+const IconSnow = ({ className = 'w-3 h-3' }) => (
+  <svg viewBox="0 0 24 24" className={`${className} fill-none stroke-current stroke-2 shrink-0`}>
+    <path strokeLinecap="round" strokeLinejoin="round" d="M12 2v20M4.2 7l15.6 10M19.8 7L4.2 17M12 6l-2.5-2.5M12 6l2.5-2.5M12 18l-2.5 2.5M12 18l2.5 2.5"/>
   </svg>
 )
 
@@ -38,10 +38,12 @@ const sortOptions = [
   { id: 'name', label: 'Nombre A–Z' },
 ]
 
+// Los rangos se aplican al precio de la presentación más barata de cada producto.
 const priceRanges = [
   { id: 'all', label: 'Todos los precios' },
-  { id: 'low', label: 'Hasta S/10', min: 0, max: 10 },
-  { id: 'mid', label: 'S/10 – S/30', min: 10, max: 30 },
+  { id: 'low', label: 'Hasta S/15', min: 0, max: 15 },
+  { id: 'mid', label: 'S/15 – S/25', min: 15, max: 24.99 },
+  { id: 'high', label: 'S/25 a más', min: 25, max: Infinity },
 ]
 
 function ProductStoreCard({ product }) {
@@ -57,7 +59,7 @@ function ProductStoreCard({ product }) {
     setTimeout(() => setAdded(false), 2000)
   }
 
-  const minPrice = Math.min(...product.sizes.map(s => s.price))
+  const from = minPrice(product)
 
   return (
     <motion.div
@@ -83,6 +85,12 @@ function ProductStoreCard({ product }) {
                 {product.badge}
               </span>
             )}
+            {product.refrigerated && (
+              <span className="absolute top-3 right-3 flex items-center gap-1 bg-nk-ivory/90 backdrop-blur-sm text-nk-olive text-[9px] font-bold px-2 py-1 rounded-full"
+                style={{ fontFamily: "'DM Mono', monospace" }}>
+                <IconSnow /> SOLO LIMA
+              </span>
+            )}
           </Link>
 
           {/* Info */}
@@ -106,7 +114,7 @@ function ProductStoreCard({ product }) {
           <div>
             <span className="text-[10px] text-nk-muted">Desde</span>
             <p style={{ fontFamily: "'Playfair Display', serif" }} className="text-xl font-black text-nk-choco leading-none">
-              S/{minPrice.toFixed(2)}
+              S/{from.toFixed(2)}
             </p>
           </div>
 
@@ -140,10 +148,18 @@ function ProductStoreCard({ product }) {
 
 export default function StorePage() {
   const [query, setQuery] = useState('')
-  const [activeCategory, setActiveCategory] = useState('all')
+  // La categoría vive en la URL (?categoria=tortas) para poder compartir el enlace
+  const [searchParams, setSearchParams] = useSearchParams()
+  const param = searchParams.get('categoria')
+  const activeCategory = categories.some((c) => c.id === param) ? param : 'all'
+  const setActiveCategory = (id) => {
+    const next = new URLSearchParams(searchParams)
+    if (id === 'all') next.delete('categoria')
+    else next.set('categoria', id)
+    setSearchParams(next, { replace: true })
+  }
   const [priceRange, setPriceRange] = useState('all')
   const [sort, setSort] = useState('relevance')
-  const [showFilters, setShowFilters] = useState(false)
   const searchRef = useRef(null)
 
   const filtered = useMemo(() => {
@@ -170,7 +186,7 @@ export default function StorePage() {
       const range = priceRanges.find(r => r.id === priceRange)
       if (range) {
         list = list.filter(p => {
-          const min = Math.min(...p.sizes.map(s => s.price))
+          const min = minPrice(p)
           return min >= range.min && min <= range.max
         })
       }
@@ -179,10 +195,10 @@ export default function StorePage() {
     // Orden
     switch (sort) {
       case 'price-asc':
-        list.sort((a, b) => Math.min(...a.sizes.map(s => s.price)) - Math.min(...b.sizes.map(s => s.price)))
+        list.sort((a, b) => minPrice(a) - minPrice(b))
         break
       case 'price-desc':
-        list.sort((a, b) => Math.min(...b.sizes.map(s => s.price)) - Math.min(...a.sizes.map(s => s.price)))
+        list.sort((a, b) => minPrice(b) - minPrice(a))
         break
       case 'name':
         list.sort((a, b) => a.name.localeCompare(b.name, 'es'))
@@ -256,102 +272,71 @@ export default function StorePage() {
           >
             {sortOptions.map(o => <option key={o.id} value={o.id}>{o.label}</option>)}
           </select>
-
-          {/* Toggle filtros mobile */}
-          <button
-            onClick={() => setShowFilters(!showFilters)}
-            className={`sm:hidden flex items-center gap-2 px-5 py-3.5 rounded-2xl border-2 font-medium text-sm transition-colors ${
-              showFilters ? 'border-nk-choco bg-nk-choco text-nk-ivory' : 'border-nk-arena bg-white text-nk-muted'
-            }`}
-          >
-            <IconFilter />
-            Filtros
-            {hasFilters && <span className="w-1.5 h-1.5 rounded-full bg-nk-gold" />}
-          </button>
         </div>
 
         <div className="flex gap-6">
 
-          {/* Sidebar de filtros — desktop siempre visible, mobile toggle */}
-          <AnimatePresence>
-            {(showFilters || true) && (
-              <motion.aside
-                initial={false}
-                className="hidden sm:flex flex-col gap-6 w-56 shrink-0"
-              >
-                {/* Categorías */}
-                <div>
-                  <p style={{ fontFamily: "'DM Mono', monospace" }} className="text-nk-muted text-[10px] tracking-[3px] mb-3">CATEGORÍA</p>
-                  <div className="flex flex-col gap-1">
-                    {categories.map(cat => (
-                      <button
-                        key={cat.id}
-                        onClick={() => setActiveCategory(cat.id)}
-                        className={`flex items-center justify-between px-3 py-2.5 rounded-xl text-sm font-medium transition-all text-left ${
-                          activeCategory === cat.id
-                            ? 'bg-nk-choco text-nk-ivory'
-                            : 'text-nk-muted hover:bg-nk-arena/30 hover:text-nk-choco'
-                        }`}
-                      >
-                        {cat.label}
-                        <span className="text-[10px] opacity-60">
-                          {cat.id === 'all' ? products.length : products.filter(p => p.category === cat.id).length}
-                        </span>
-                      </button>
-                    ))}
-                  </div>
-                </div>
-
-                {/* Precio */}
-                <div>
-                  <p style={{ fontFamily: "'DM Mono', monospace" }} className="text-nk-muted text-[10px] tracking-[3px] mb-3">PRECIO</p>
-                  <div className="flex flex-col gap-1">
-                    {priceRanges.map(range => (
-                      <button
-                        key={range.id}
-                        onClick={() => setPriceRange(range.id)}
-                        className={`flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-sm text-left transition-all ${
-                          priceRange === range.id
-                            ? 'bg-nk-choco text-nk-ivory font-medium'
-                            : 'text-nk-muted hover:bg-nk-arena/30 hover:text-nk-choco'
-                        }`}
-                      >
-                        <span className={`w-3.5 h-3.5 rounded-full border-2 flex items-center justify-center shrink-0 ${
-                          priceRange === range.id ? 'border-nk-gold bg-nk-gold' : 'border-nk-arena'
-                        }`}>
-                          {priceRange === range.id && <span className="w-1.5 h-1.5 rounded-full bg-nk-ivory" />}
-                        </span>
-                        {range.label}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-
-                {/* Limpiar filtros */}
-                {hasFilters && (
+          {/* Sidebar de filtros — desktop. En mobile se usan los pills de abajo. */}
+          <aside className="hidden sm:flex flex-col gap-6 w-56 shrink-0">
+            {/* Categorías */}
+            <div>
+              <p style={{ fontFamily: "'DM Mono', monospace" }} className="text-nk-muted text-[10px] tracking-[3px] mb-3">CATEGORÍA</p>
+              <div className="flex flex-col gap-1">
+                {categories.map(cat => (
                   <button
-                    onClick={clearAll}
-                    className="flex items-center gap-2 text-nk-muted hover:text-nk-choco text-xs transition-colors"
+                    key={cat.id}
+                    onClick={() => setActiveCategory(cat.id)}
+                    className={`flex items-center justify-between px-3 py-2.5 rounded-xl text-sm font-medium transition-all text-left ${
+                      activeCategory === cat.id
+                        ? 'bg-nk-choco text-nk-ivory'
+                        : 'text-nk-muted hover:bg-nk-arena/30 hover:text-nk-choco'
+                    }`}
                   >
-                    <IconX />
-                    Limpiar filtros
+                    {cat.label}
+                    <span className="text-[10px] opacity-60">
+                      {cat.id === 'all' ? products.length : products.filter(p => p.category === cat.id).length}
+                    </span>
                   </button>
-                )}
-              </motion.aside>
-            )}
-          </AnimatePresence>
+                ))}
+              </div>
+            </div>
 
-          {/* Filtros mobile desplegables */}
-          <AnimatePresence>
-            {showFilters && (
-              <motion.div
-                initial={{ height: 0, opacity: 0 }}
-                animate={{ height: 'auto', opacity: 1 }}
-                exit={{ height: 0, opacity: 0 }}
-                className="sm:hidden overflow-hidden w-full mb-4"
-              />
+            {/* Precio */}
+            <div>
+              <p style={{ fontFamily: "'DM Mono', monospace" }} className="text-nk-muted text-[10px] tracking-[3px] mb-3">PRECIO</p>
+              <div className="flex flex-col gap-1">
+                {priceRanges.map(range => (
+                  <button
+                    key={range.id}
+                    onClick={() => setPriceRange(range.id)}
+                    className={`flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-sm text-left transition-all ${
+                      priceRange === range.id
+                        ? 'bg-nk-choco text-nk-ivory font-medium'
+                        : 'text-nk-muted hover:bg-nk-arena/30 hover:text-nk-choco'
+                    }`}
+                  >
+                    <span className={`w-3.5 h-3.5 rounded-full border-2 flex items-center justify-center shrink-0 ${
+                      priceRange === range.id ? 'border-nk-gold bg-nk-gold' : 'border-nk-arena'
+                    }`}>
+                      {priceRange === range.id && <span className="w-1.5 h-1.5 rounded-full bg-nk-ivory" />}
+                    </span>
+                    {range.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Limpiar filtros */}
+            {hasFilters && (
+              <button
+                onClick={clearAll}
+                className="flex items-center gap-2 text-nk-muted hover:text-nk-choco text-xs transition-colors"
+              >
+                <IconX />
+                Limpiar filtros
+              </button>
             )}
-          </AnimatePresence>
+          </aside>
 
           {/* Grid de productos */}
           <div className="flex-1 min-w-0">

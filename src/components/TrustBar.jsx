@@ -4,7 +4,7 @@ import { ScrollTrigger } from 'gsap/ScrollTrigger'
 
 gsap.registerPlugin(ScrollTrigger)
 
-const rowA = ['Sin azúcar añadida', 'Gluten Free', 'Alta Proteína', '100% Keto', 'Ingredientes naturales', 'Eritritol & Monk Fruit']
+const rowA = ['Sin azúcar añadida', 'Gluten Free', 'Alta Proteína', '100% Keto', 'Ingredientes naturales', 'Alulosa & Monk Fruit']
 const rowB = ['Hecho en Perú', 'Bolsa resellable', 'Cero culpa', 'Snack premium', 'Doble cacao', 'Almendra real']
 
 function Star() {

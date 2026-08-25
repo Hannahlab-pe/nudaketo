@@ -13,7 +13,7 @@ const testimonials = [
     name: 'Carlos R.',
     role: 'Atleta · CrossFit',
     stars: 5,
-    text: 'Llevo 3 meses en dieta keto y estos snacks me salvaron. La barra de cacao y avellana es perfecta entre entrenos. Sin azúcar real.',
+    text: 'Llevo 3 meses en dieta keto y estos snacks me salvaron. La Cacao Nuts es perfecta entre entrenos. Sin azúcar real.',
     initial: 'C',
   },
   {

@@ -24,7 +24,7 @@ function Counter({ target, suffix = '' }) {
 const features = [
   { label: 'HA', title: 'Harina de Almendra', desc: 'Base keto por excelencia. Alta en grasas buenas, baja en carbohidratos.' },
   { label: 'CH', title: 'Chips Sin Azúcar', desc: 'Chocolate premium sin azúcar añadida. Sabor intenso sin alterar tu metabolismo.' },
-  { label: 'EM', title: 'Eritritol & Monk Fruit', desc: 'Endulzantes naturales con índice glucémico cero. Dulzor real, sin impacto.' },
+  { label: 'AM', title: 'Alulosa & Monk Fruit', desc: 'Endulzantes naturales con índice glucémico cero. Dulzor real, sin impacto.' },
   { label: 'VR', title: 'Vainilla Real', desc: 'Extracto puro de vainilla, no artificial. Aroma y sabor profundo.' },
   { label: 'AT', title: 'Almendras Tostadas', desc: 'Almendras laminadas tostadas artesanalmente. Crunch natural y proteína.' },
   { label: '0C', title: 'Cero Conservantes', desc: 'Sin aditivos artificiales. Lo que lees en la etiqueta es lo que comes.' },

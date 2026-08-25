@@ -8,7 +8,7 @@ gsap.registerPlugin(ScrollTrigger)
 const values = [
   { abbr: 'IR', title: 'Ingredientes reales', desc: 'Sin aditivos artificiales ni conservantes' },
   { abbr: 'FP', title: 'Formulación precisa', desc: 'Macros balanceados para estilo keto' },
-  { abbr: 'SA', title: 'Sin azúcar añadida', desc: 'Eritritol y monk fruit de calidad' },
+  { abbr: 'SA', title: 'Sin azúcar añadida', desc: 'Alulosa y monk fruit de calidad' },
   { abbr: 'CA', title: 'Calidad artesanal', desc: 'Elaborado con dedicación y cuidado' },
 ]
 
@@ -114,7 +114,7 @@ export default function BrandStory() {
 
             <p className="text-nk-muted text-sm sm:text-base leading-relaxed">
               Cada galletón y barra nace de la convicción de que el bienestar no debe
-              sacrificar el placer. Usamos eritritol y extracto de monk fruit para endulzar
+              sacrificar el placer. Usamos alulosa y extracto de monk fruit para endulzar
               de forma natural, manteniendo el perfil keto sin comprometer el sabor.
             </p>
 

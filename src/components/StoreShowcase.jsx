@@ -4,6 +4,7 @@ import { motion, useInView } from 'motion/react'
 import gsap from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
 import Magnetic from './effects/Magnetic'
+import { products } from '../data/products'
 
 gsap.registerPlugin(ScrollTrigger)
 
@@ -75,8 +76,8 @@ export default function StoreShowcase() {
           transition={{ duration: 0.6, delay: 0.25 }}
           className="text-nk-ivory/70 text-base sm:text-lg max-w-xl leading-relaxed"
         >
-          Galletones, barras y bites elaborados con ingredientes reales.
-          Sin azúcar añadida, gluten free y con proteína real.
+          Tortas, postres cuchareables, galletones, barras y bites elaborados con
+          ingredientes reales. Sin azúcar añadida, gluten free y con proteína real.
         </motion.p>
 
         <motion.div
@@ -104,7 +105,7 @@ export default function StoreShowcase() {
           style={{ fontFamily: "'DM Mono', monospace" }}
           className="text-nk-ivory/40 text-[10px] sm:text-xs tracking-[2px]"
         >
-          5 PRODUCTOS · ENVÍOS A TODO EL PERÚ
+          {products.length} PRODUCTOS · ENVÍOS A TODO EL PERÚ
         </motion.p>
       </div>
     </section>

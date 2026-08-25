@@ -62,7 +62,18 @@ export default function ProductPage() {
     { key: 'main', src: product.image, label: 'Lifestyle' },
   ]
 
-  const related = products.filter((p) => p.id !== product.id).slice(0, 2)
+  // Prioriza productos de la misma categoría; completa con el resto si faltan.
+  const others = products.filter((p) => p.id !== product.id)
+  const related = [
+    ...others.filter((p) => p.category === product.category),
+    ...others.filter((p) => p.category !== product.category),
+  ].slice(0, 2)
+
+  const specs = [
+    { label: 'Presentación', value: product.packaging },
+    { label: 'Peso neto', value: product.netWeight },
+    { label: 'Proteína', value: product.protein },
+  ].filter((s) => s.value)
 
   return (
     <div className="min-h-screen bg-nk-ivory">
@@ -197,6 +208,47 @@ export default function ProductPage() {
               </button>
             </div>
 
+            {/* Aviso: cadena de frío */}
+            {product.refrigerated && (
+              <div className="flex items-start gap-3 rounded-xl border-2 border-nk-olive/30 bg-nk-olive/5 p-3.5">
+                <span className="text-nk-olive mt-0.5 shrink-0">
+                  <svg viewBox="0 0 24 24" className="w-4 h-4 fill-none stroke-current stroke-2">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M12 2v20M4.2 7l15.6 10M19.8 7L4.2 17M12 6l-2.5-2.5M12 6l2.5-2.5M12 18l-2.5 2.5M12 18l2.5 2.5"/>
+                  </svg>
+                </span>
+                <p className="text-nk-choco text-xs leading-relaxed">
+                  <strong>Producto refrigerado.</strong> Por cadena de frío solo hacemos entregas en Lima Metropolitana o recojo en tienda. No disponible para envío a provincia.
+                </p>
+              </div>
+            )}
+
+            {/* Tabla nutricional */}
+            {product.nutrition && (
+              <div className="border-t border-nk-arena pt-5">
+                <div className="flex flex-wrap items-baseline justify-between gap-2 mb-3">
+                  <p style={{ fontFamily: "'DM Mono', monospace" }} className="text-nk-muted text-[10px] sm:text-xs tracking-[3px]">INFORMACIÓN NUTRICIONAL</p>
+                  <p className="text-nk-muted text-[11px]">Por {product.nutrition.serving}</p>
+                </div>
+                <div className="grid grid-cols-4 gap-2">
+                  {[
+                    { label: 'kcal', value: product.nutrition.kcal },
+                    { label: 'Grasas', value: product.nutrition.fat },
+                    { label: 'Carbos', value: product.nutrition.carbs },
+                    { label: 'Proteína', value: product.nutrition.protein },
+                  ].map(({ label, value }) => (
+                    <div key={label} className="rounded-xl border-2 border-nk-arena bg-white py-3 text-center">
+                      <p style={{ fontFamily: "'Playfair Display', serif" }} className="text-nk-choco text-xl sm:text-2xl font-black leading-none">
+                        {value}
+                      </p>
+                      <p style={{ fontFamily: "'DM Mono', monospace" }} className="text-nk-muted text-[9px] tracking-wider mt-1.5">
+                        {label.toUpperCase()}
+                      </p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
             {/* Highlights */}
             <div className="border-t border-nk-arena pt-5">
               <p style={{ fontFamily: "'DM Mono', monospace" }} className="text-nk-muted text-[10px] sm:text-xs tracking-[3px] mb-3 sm:mb-4">CARACTERÍSTICAS</p>
@@ -210,19 +262,31 @@ export default function ProductPage() {
               </ul>
             </div>
 
+            {/* Ingredientes */}
+            {product.ingredients?.length > 0 && (
+              <div className="border-t border-nk-arena pt-5">
+                <p style={{ fontFamily: "'DM Mono', monospace" }} className="text-nk-muted text-[10px] sm:text-xs tracking-[3px] mb-3 sm:mb-4">INGREDIENTES PRINCIPALES</p>
+                <ul className="flex flex-wrap gap-2">
+                  {product.ingredients.map((ing) => (
+                    <li key={ing} className="rounded-full border border-nk-arena bg-white text-nk-choco text-[11px] sm:text-xs px-3 py-1.5">
+                      {ing}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+
             {/* Info packaging */}
-            <div className="grid grid-cols-3 gap-2">
-              {[
-                { label: 'Presentación', value: product.packaging },
-                { label: 'Peso neto', value: product.netWeight },
-                { label: 'Proteína', value: product.protein },
-              ].map(({ label, value }) => (
-                <div key={label} className="rounded-lg border border-nk-arena p-2.5 bg-white text-center">
-                  <p style={{ fontFamily: "'DM Mono', monospace" }} className="text-nk-muted text-[8px] tracking-wider mb-1">{label.toUpperCase()}</p>
-                  <p className="text-nk-choco text-[10px] sm:text-xs font-semibold leading-snug">{value}</p>
-                </div>
-              ))}
-            </div>
+            {specs.length > 0 && (
+              <div className={`grid gap-2 ${specs.length === 3 ? 'grid-cols-3' : specs.length === 2 ? 'grid-cols-2' : 'grid-cols-1'}`}>
+                {specs.map(({ label, value }) => (
+                  <div key={label} className="rounded-lg border border-nk-arena p-2.5 bg-white text-center">
+                    <p style={{ fontFamily: "'DM Mono', monospace" }} className="text-nk-muted text-[8px] tracking-wider mb-1">{label.toUpperCase()}</p>
+                    <p className="text-nk-choco text-[10px] sm:text-xs font-semibold leading-snug">{value}</p>
+                  </div>
+                ))}
+              </div>
+            )}
           </motion.div>
         </div>
 

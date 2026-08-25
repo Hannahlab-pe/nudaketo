@@ -3,12 +3,13 @@ import { useNavigate, Link } from 'react-router-dom'
 import { toast } from 'sonner'
 import { useCart } from '../context/CartContext'
 import { useAuth } from '../context/AuthContext'
+import { apiFetch, SessionExpiredError } from '../lib/api'
 import MapPicker, { parseLatLng } from '../components/MapPicker'
 import { IconPin } from '../components/icons'
 import { STORE } from '../config/store'
+import { hasRefrigerated } from '../data/products'
 
 const CULQI_KEY = import.meta.env.VITE_CULQI_PUBLIC_KEY || ''
-const API = import.meta.env.VITE_API_URL || 'http://localhost:3000'
 
 // Zonas de envío (deben coincidir con SHIPPING_ZONES del backend)
 export const SHIPPING_ZONES = [
@@ -62,7 +63,10 @@ export default function CheckoutPage() {
 
   const FREE_SHIPPING_THRESHOLD = 100
   const freeShipping = total >= FREE_SHIPPING_THRESHOLD
-  const selectedZone = SHIPPING_ZONES.find((z) => z.id === zone) || SHIPPING_ZONES[0]
+  // Tortas y cuchareables necesitan cadena de frío: solo Lima o recojo en tienda.
+  const coldChain = hasRefrigerated(items)
+  const zoneId = coldChain ? 'lima' : zone
+  const selectedZone = SHIPPING_ZONES.find((z) => z.id === zoneId) || SHIPPING_ZONES[0]
   const shippingCost = fulfillment === 'PICKUP' || freeShipping ? 0 : selectedZone.price
   const discount = appliedCode ? +(total * (appliedCode.discountPct || 0) / 100).toFixed(2) : 0
   const grandTotal = Math.max(0, total - discount) + shippingCost
@@ -75,9 +79,7 @@ export default function CheckoutPage() {
     setValidatingCode(true)
     setCodeError('')
     try {
-      const res = await fetch(`${API}/sellers/validate/${encodeURIComponent(code)}`, {
-        headers: { Authorization: `Bearer ${token}` },
-      })
+      const res = await apiFetch(`/sellers/validate/${encodeURIComponent(code)}`)
       const data = await res.json()
       if (data.valid) {
         setAppliedCode({ code: data.code, discountPct: data.discountPct, sellerName: data.sellerName })
@@ -86,8 +88,8 @@ export default function CheckoutPage() {
         setAppliedCode(null)
         setCodeError('Código no válido')
       }
-    } catch {
-      setCodeError('No se pudo validar el código')
+    } catch (err) {
+      if (!(err instanceof SessionExpiredError)) setCodeError('No se pudo validar el código')
     } finally {
       setValidatingCode(false)
     }
@@ -111,7 +113,7 @@ export default function CheckoutPage() {
   }, [user]) // eslint-disable-line react-hooks/exhaustive-deps
 
   const stateRef = useRef({})
-  stateRef.current = { items, token, fulfillment, zone, form, grandTotal, userEmail: user?.email, sellerCode: appliedCode?.code || null }
+  stateRef.current = { items, token, fulfillment, zone: zoneId, form, grandTotal, userEmail: user?.email, sellerCode: appliedCode?.code || null }
   const openingRef = useRef(false)
   const chargingRef = useRef(false)
 
@@ -120,13 +122,13 @@ export default function CheckoutPage() {
     chargingRef.current = true
     setPaying(true)
     const tid = toast.loading('Procesando tu pago...')
-    const { items: cartItems, token: authToken, fulfillment: ff, zone: z, form: f, userEmail, sellerCode } = stateRef.current
+    const { items: cartItems, fulfillment: ff, zone: z, form: f, userEmail, sellerCode } = stateRef.current
     // La confirmación va al correo de la cuenta (no al que se puso en el modal de Culqi)
     const email = userEmail || culqiEmail
     try {
-      const res = await fetch(`${API}/orders`, {
+      const res = await apiFetch('/orders', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${authToken}` },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           culqiToken: tokenId,
           email,
@@ -148,7 +150,9 @@ export default function CheckoutPage() {
       setPaymentOk(true)
       toast.success('¡Pago realizado con éxito!', { id: tid })
     } catch (err) {
-      toast.error(err.message || 'Error al procesar el pago. Intenta nuevamente.', { id: tid })
+      // Si la sesión venció, el AuthContext ya avisa y abre el login: no cobramos nada.
+      if (err instanceof SessionExpiredError) toast.dismiss(tid)
+      else toast.error(err.message || 'Error al procesar el pago. Intenta nuevamente.', { id: tid })
     } finally {
       setPaying(false)
       chargingRef.current = false
@@ -287,6 +291,20 @@ export default function CheckoutPage() {
               </div>
             </div>
 
+            {/* Aviso cadena de frío */}
+            {coldChain && (
+              <div className="flex items-start gap-3 rounded-xl border-2 border-nk-olive/30 bg-nk-olive/5 p-4 max-w-2xl">
+                <span className="text-nk-olive mt-0.5 shrink-0">
+                  <svg viewBox="0 0 24 24" className="w-4 h-4 fill-none stroke-current stroke-2">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M12 2v20M4.2 7l15.6 10M19.8 7L4.2 17M12 6l-2.5-2.5M12 6l2.5-2.5M12 18l-2.5 2.5M12 18l2.5 2.5"/>
+                  </svg>
+                </span>
+                <p className="text-nk-choco text-xs leading-relaxed">
+                  Tu pedido incluye <strong>productos refrigerados</strong> (tortas o cuchareables). Por cadena de frío solo entregamos en <strong>Lima Metropolitana</strong> o por recojo en tienda.
+                </p>
+              </div>
+            )}
+
             {fulfillment === 'PICKUP' ? (
               <div className="rounded-xl border border-nk-arena bg-white p-5 max-w-md">
                 <p className="text-nk-choco font-semibold mb-3">Recojo en tienda — Gratis</p>
@@ -317,12 +335,27 @@ export default function CheckoutPage() {
                   ) : (
                     <>
                       <div className="grid grid-cols-2 gap-3 max-w-md">
-                        {SHIPPING_ZONES.map((z) => (
-                          <button key={z.id} onClick={() => setZone(z.id)} className={`flex items-center justify-between p-3.5 rounded-xl border-2 transition-all ${zone === z.id ? 'border-nk-gold bg-nk-gold/5' : 'border-nk-arena bg-white hover:border-nk-gold/50'}`}>
-                            <span className="text-nk-choco text-sm font-medium">{z.label}</span>
-                            <span className="text-nk-gold text-xs font-bold">S/{z.price.toFixed(2)}</span>
-                          </button>
-                        ))}
+                        {SHIPPING_ZONES.map((z) => {
+                          const blocked = coldChain && z.id !== 'lima'
+                          return (
+                            <button
+                              key={z.id}
+                              onClick={() => !blocked && setZone(z.id)}
+                              disabled={blocked}
+                              title={blocked ? 'No disponible para productos refrigerados' : undefined}
+                              className={`flex items-center justify-between p-3.5 rounded-xl border-2 transition-all ${
+                                blocked
+                                  ? 'border-nk-arena bg-nk-arena/20 opacity-50 cursor-not-allowed'
+                                  : zoneId === z.id
+                                    ? 'border-nk-gold bg-nk-gold/5'
+                                    : 'border-nk-arena bg-white hover:border-nk-gold/50'
+                              }`}
+                            >
+                              <span className="text-nk-choco text-sm font-medium">{z.label}</span>
+                              <span className="text-nk-gold text-xs font-bold">S/{z.price.toFixed(2)}</span>
+                            </button>
+                          )
+                        })}
                       </div>
                       <p className="text-nk-muted text-[11px] mt-2">Envío gratis por compras de S/100 a más.</p>
                     </>
