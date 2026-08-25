@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useRef, useState, lazy, Suspense } from 'react'
 import { BrowserRouter, Routes, Route, useLocation } from 'react-router-dom'
 import { AnimatePresence } from 'motion/react'
 import { Toaster } from 'sonner'
@@ -7,6 +7,7 @@ import gsap from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
 import { CartProvider } from './context/CartContext'
 import { AuthProvider } from './context/AuthContext'
+import { ProductsProvider } from './context/ProductsContext'
 import CartDrawer from './components/CartDrawer'
 import AuthModal from './components/AuthModal'
 import LoadingScreen from './components/LoadingScreen'
@@ -15,19 +16,65 @@ import Footer from './components/Footer'
 import HomePage from './pages/HomePage'
 import StorePage from './pages/StorePage'
 import ProductPage from './pages/ProductPage'
-import AdminPage from './pages/AdminPage'
-import MisComprasPage from './pages/MisComprasPage'
-import CheckoutPage from './pages/CheckoutPage'
-import PerfilPage from './pages/PerfilPage'
-import OrderDetailPage from './pages/OrderDetailPage'
-import AdminOrderDetailPage from './pages/AdminOrderDetailPage'
-import VendedorPage from './pages/VendedorPage'
-import AdminSellersPage from './pages/AdminSellersPage'
-import TermsPage from './pages/TermsPage'
-import PrivacyPage from './pages/PrivacyPage'
-import ReturnsPage from './pages/ReturnsPage'
-import ComplaintsPage from './pages/ComplaintsPage'
 import './index.css'
+
+// Todo lo que no necesita un visitante que solo viene a mirar la tienda se
+// descarga aparte: el checkout y el perfil arrastran Leaflet (~150 kB) y el
+// panel arrastra el admin entero.
+const CheckoutPage = lazy(() => import('./pages/CheckoutPage'))
+const PerfilPage = lazy(() => import('./pages/PerfilPage'))
+const MisComprasPage = lazy(() => import('./pages/MisComprasPage'))
+const OrderDetailPage = lazy(() => import('./pages/OrderDetailPage'))
+const AdminOrderDetailPage = lazy(() => import('./pages/AdminOrderDetailPage'))
+const VendedorPage = lazy(() => import('./pages/VendedorPage'))
+const AdminLayout = lazy(() => import('./pages/admin/AdminLayout'))
+const AdminDashboard = lazy(() => import('./pages/admin/AdminDashboard'))
+const AdminOrders = lazy(() => import('./pages/admin/AdminOrders'))
+const AdminProducts = lazy(() => import('./pages/admin/AdminProducts'))
+const AdminCustomers = lazy(() => import('./pages/admin/AdminCustomers'))
+const AdminSellers = lazy(() => import('./pages/admin/AdminSellers'))
+const TermsPage = lazy(() => import('./pages/TermsPage'))
+const PrivacyPage = lazy(() => import('./pages/PrivacyPage'))
+const ReturnsPage = lazy(() => import('./pages/ReturnsPage'))
+const ComplaintsPage = lazy(() => import('./pages/ComplaintsPage'))
+
+function NotFound() {
+  return (
+    <div className="flex min-h-screen flex-col items-center justify-center gap-4 bg-nk-ivory px-6 text-center">
+      <p style={{ fontFamily: "'DM Mono', monospace" }} className="text-[10px] tracking-[4px] text-nk-gold">
+        ERROR 404
+      </p>
+      <h1 style={{ fontFamily: "'Playfair Display', serif" }} className="text-3xl font-black text-nk-choco">
+        Esta página no existe
+      </h1>
+      <p className="max-w-sm text-sm text-nk-muted">
+        El enlace que seguiste no lleva a ningún lado. Puede que el producto ya no esté disponible.
+      </p>
+      <div className="mt-2 flex flex-col gap-3 sm:flex-row">
+        <a href="/tienda" className="rounded-full bg-nk-choco px-6 py-3 text-sm font-semibold text-nk-ivory transition-colors hover:bg-nk-gold">
+          Ir a la tienda
+        </a>
+        <a href="/" className="rounded-full border-2 border-nk-arena px-6 py-3 text-sm font-semibold text-nk-choco transition-colors hover:border-nk-choco">
+          Volver al inicio
+        </a>
+      </div>
+    </div>
+  )
+}
+
+function RouteFallback() {
+  return (
+    <div className="flex min-h-screen items-center justify-center bg-nk-ivory">
+      <div className="flex flex-col items-center gap-3 text-nk-muted">
+        <svg className="h-6 w-6 animate-spin" viewBox="0 0 24 24" fill="none">
+          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z" />
+        </svg>
+        <span className="text-sm">Cargando...</span>
+      </div>
+    </div>
+  )
+}
 
 gsap.registerPlugin(ScrollTrigger)
 
@@ -81,12 +128,18 @@ function Layout() {
       <Navbar />
       <CartDrawer />
       <AuthModal />
+      <Suspense fallback={<RouteFallback />}>
       <Routes>
         <Route path="/" element={<HomePage />} />
         <Route path="/tienda" element={<StorePage />} />
-        <Route path="/admin" element={<AdminPage />} />
+        <Route path="/admin" element={<AdminLayout />}>
+          <Route index element={<AdminDashboard />} />
+          <Route path="pedidos" element={<AdminOrders />} />
+          <Route path="productos" element={<AdminProducts />} />
+          <Route path="clientes" element={<AdminCustomers />} />
+          <Route path="vendedores" element={<AdminSellers />} />
+        </Route>
         <Route path="/admin/pedido/:id" element={<AdminOrderDetailPage />} />
-        <Route path="/admin/vendedores" element={<AdminSellersPage />} />
         <Route path="/vendedor" element={<VendedorPage />} />
         <Route path="/mis-compras" element={<MisComprasPage />} />
         <Route path="/mis-compras/:id" element={<OrderDetailPage />} />
@@ -97,7 +150,9 @@ function Layout() {
         <Route path="/politica-de-privacidad" element={<PrivacyPage />} />
         <Route path="/politica-de-devoluciones" element={<ReturnsPage />} />
         <Route path="/libro-de-reclamaciones" element={<ComplaintsPage />} />
+        <Route path="*" element={<NotFound />} />
       </Routes>
+      </Suspense>
       <Footer />
     </div>
   )
@@ -121,10 +176,12 @@ export default function App() {
               },
             }}
           />
-          <AnimatePresence>
-            {loading && <LoadingScreen key="loader" onDone={handleDone} />}
-          </AnimatePresence>
-          <Layout />
+          <ProductsProvider>
+            <AnimatePresence>
+              {loading && <LoadingScreen key="loader" onDone={handleDone} />}
+            </AnimatePresence>
+            <Layout />
+          </ProductsProvider>
         </CartProvider>
       </AuthProvider>
     </BrowserRouter>

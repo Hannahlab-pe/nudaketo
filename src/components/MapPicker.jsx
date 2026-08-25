@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react'
+import { useEffect, useRef, useLayoutEffect } from 'react'
 import L from 'leaflet'
 import 'leaflet/dist/leaflet.css'
 
@@ -29,8 +29,11 @@ export default function MapPicker({ onSelect, initial = null, height = 260 }) {
   const elRef = useRef(null)
   const mapRef = useRef(null)
   const markerRef = useRef(null)
+  // Leaflet guarda el callback al crear el mapa, así que se lee por ref para
+  // que siempre apunte al último. Se sincroniza en un efecto: escribir en un
+  // ref durante el render es un efecto colateral y React puede descartarlo.
   const onSelectRef = useRef(onSelect)
-  onSelectRef.current = onSelect
+  useLayoutEffect(() => { onSelectRef.current = onSelect }, [onSelect])
 
   useEffect(() => {
     if (mapRef.current || !elRef.current) return

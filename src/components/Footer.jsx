@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom'
-import { products, categories } from '../data/products'
+import { useProducts } from '../context/ProductsContext'
 
 const IconInstagram = () => (
   <svg viewBox="0 0 24 24" className="w-4 h-4 fill-none stroke-current stroke-1.5">
@@ -33,18 +33,24 @@ const legalLinks = [
 ]
 
 // Categorías reales del catálogo + enlace a la tienda completa
-const productLinks = [
-  ...categories
-    .filter((c) => c.id !== 'all')
-    .map((c) => ({
-      label: c.label,
-      href: `/tienda?categoria=${c.id}`,
-      count: products.filter((p) => p.category === c.id).length,
-    })),
-  { label: 'Ver toda la tienda', href: '/tienda' },
-]
+function buildProductLinks(products, categories) {
+  return [
+    ...categories
+      .filter((c) => c.id !== 'all')
+      .map((c) => ({
+        label: c.label,
+        href: `/tienda?categoria=${c.id}`,
+        count: products.filter((p) => p.category === c.id).length,
+      }))
+      .filter((c) => c.count > 0),
+    { label: 'Ver toda la tienda', href: '/tienda' },
+  ]
+}
 
 export default function Footer() {
+  const { products, categories } = useProducts()
+  const productLinks = buildProductLinks(products, categories)
+
   return (
     <footer className="bg-nk-choco overflow-hidden">
 

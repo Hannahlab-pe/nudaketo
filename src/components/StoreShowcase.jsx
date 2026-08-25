@@ -4,11 +4,12 @@ import { motion, useInView } from 'motion/react'
 import gsap from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
 import Magnetic from './effects/Magnetic'
-import { products } from '../data/products'
+import { useProducts } from '../context/ProductsContext'
 
 gsap.registerPlugin(ScrollTrigger)
 
 export default function StoreShowcase() {
+  const { products } = useProducts()
   const sectionRef = useRef(null)
   const imgRef = useRef(null)
   const contentRef = useRef(null)

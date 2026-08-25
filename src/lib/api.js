@@ -1,5 +1,30 @@
 const API = import.meta.env.VITE_API_URL || 'http://localhost:3000'
 
+export const API_BASE = API
+
+/**
+ * Resuelve la ruta de una imagen.
+ * Las subidas desde el panel viven en la API (`/media/:id`); las originales
+ * son archivos estáticos del frontend (`/images/...`) y se dejan tal cual.
+ */
+export function assetUrl(path) {
+  if (!path) return ''
+  if (/^https?:\/\//.test(path)) return path
+  return path.startsWith('/media/') ? `${API}${path}` : path
+}
+
+/** Sube una imagen y devuelve { id, url, mime, size }. */
+export async function uploadImage(file) {
+  const body = new FormData()
+  body.append('file', file)
+  const res = await apiFetch('/media', { method: 'POST', body })
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}))
+    throw new Error(err.message || 'No se pudo subir la imagen')
+  }
+  return res.json()
+}
+
 // El AuthContext registra aquí qué hacer cuando el backend responde 401.
 let onUnauthorized = null
 

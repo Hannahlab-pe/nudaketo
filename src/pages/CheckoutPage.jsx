@@ -7,7 +7,7 @@ import { apiFetch, SessionExpiredError } from '../lib/api'
 import MapPicker, { parseLatLng } from '../components/MapPicker'
 import { IconPin } from '../components/icons'
 import { STORE } from '../config/store'
-import { hasRefrigerated } from '../data/products'
+import { useProducts, hasRefrigerated } from '../context/ProductsContext'
 
 const CULQI_KEY = import.meta.env.VITE_CULQI_PUBLIC_KEY || ''
 
@@ -47,6 +47,7 @@ export default function CheckoutPage() {
   const navigate = useNavigate()
   const { items, total, count, clearCart } = useCart()
   const { isAuthenticated, token, user, openLogin, openRegister, updateUser } = useAuth()
+  const { products } = useProducts()
 
   const [fulfillment, setFulfillment] = useState('DELIVERY')
   const [zone, setZone] = useState('lima')
@@ -64,7 +65,7 @@ export default function CheckoutPage() {
   const FREE_SHIPPING_THRESHOLD = 100
   const freeShipping = total >= FREE_SHIPPING_THRESHOLD
   // Tortas y cuchareables necesitan cadena de frío: solo Lima o recojo en tienda.
-  const coldChain = hasRefrigerated(items)
+  const coldChain = hasRefrigerated(items, products)
   const zoneId = coldChain ? 'lima' : zone
   const selectedZone = SHIPPING_ZONES.find((z) => z.id === zoneId) || SHIPPING_ZONES[0]
   const shippingCost = fulfillment === 'PICKUP' || freeShipping ? 0 : selectedZone.price
@@ -110,10 +111,20 @@ export default function CheckoutPage() {
       mapsLink: f.mapsLink || user.mapsLink || '',
     }))
     if (user.zone) setZone(user.zone)
-  }, [user]) // eslint-disable-line react-hooks/exhaustive-deps
+  }, [user])
 
+  // Culqi llama a window.culqi mucho después del render, así que el cobro lee
+  // el pedido desde este ref. Se sincroniza en un efecto y no durante el
+  // render: escribir en un ref mientras se renderiza es un efecto colateral y
+  // React puede descartar ese render (StrictMode, renders interrumpidos).
   const stateRef = useRef({})
-  stateRef.current = { items, token, fulfillment, zone: zoneId, form, grandTotal, userEmail: user?.email, sellerCode: appliedCode?.code || null }
+  useEffect(() => {
+    stateRef.current = {
+      items, token, fulfillment, zone: zoneId, form, grandTotal,
+      userEmail: user?.email, sellerCode: appliedCode?.code || null,
+    }
+  }, [items, token, fulfillment, zoneId, form, grandTotal, user?.email, appliedCode])
+
   const openingRef = useRef(false)
   const chargingRef = useRef(false)
 

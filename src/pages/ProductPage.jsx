@@ -1,8 +1,9 @@
 import { useState } from 'react'
 import { useParams, Link } from 'react-router-dom'
 import { motion, AnimatePresence } from 'motion/react'
-import { getProductBySlug, products } from '../data/products'
+import { useProducts } from '../context/ProductsContext'
 import { useCart } from '../context/CartContext'
+import { assetUrl } from '../lib/api'
 
 const IconZoom = () => (
   <svg viewBox="0 0 24 24" className="w-4 h-4 fill-none stroke-current stroke-2">
@@ -33,10 +34,15 @@ const IconCart = () => (
 
 export default function ProductPage() {
   const { slug } = useParams()
-  const product = getProductBySlug(slug)
+  const { products } = useProducts()
+  const product = products.find((p) => p.slug === slug)
   const { addItem } = useCart()
 
-  const [selectedSize, setSelectedSize] = useState(product?.sizes[0] ?? null)
+  // Se guarda el id, no el objeto: el catálogo llega de la API y el producto
+  // puede aparecer o cambiar de precio después del primer render.
+  const [sizeId, setSizeId] = useState(null)
+  const selectedSize = product?.sizes.find((s) => s.id === sizeId) ?? product?.sizes[0] ?? null
+  const setSelectedSize = (s) => setSizeId(s.id)
   const [qty, setQty] = useState(1)
   const [added, setAdded] = useState(false)
   const [activeImg, setActiveImg] = useState('detail')
@@ -58,8 +64,8 @@ export default function ProductPage() {
   }
 
   const images = [
-    { key: 'detail', src: product.imageDetail, label: 'Detalle' },
-    { key: 'main', src: product.image, label: 'Lifestyle' },
+    { key: 'detail', src: assetUrl(product.imageDetail), label: 'Detalle' },
+    { key: 'main', src: assetUrl(product.image), label: 'Lifestyle' },
   ]
 
   // Prioriza productos de la misma categoría; completa con el resto si faltan.
@@ -305,7 +311,7 @@ export default function ProductPage() {
                   className="flex gap-4 items-center p-4 sm:p-5 rounded-2xl border border-nk-arena bg-white hover:border-nk-gold/40 hover:shadow-[0_4px_20px_rgba(75,53,39,0.08)] transition-all group overflow-hidden"
                 >
                   <div className="w-16 sm:w-20 h-16 sm:h-20 rounded-xl overflow-hidden border border-nk-arena shrink-0">
-                    <img src={p.image} alt={p.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" loading="lazy" />
+                    <img src={assetUrl(p.image)} alt={p.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" loading="lazy" />
                   </div>
                   <div className="flex-1 min-w-0">
                     <p style={{ fontFamily: "'DM Mono', monospace" }} className={`text-[9px] sm:text-[10px] tracking-[2px] ${p.accentClass}`}>{p.tagline}</p>

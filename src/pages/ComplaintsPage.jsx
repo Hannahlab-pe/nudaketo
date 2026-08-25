@@ -17,6 +17,10 @@ const initialForm = {
 export default function ComplaintsPage() {
   const [form, setForm] = useState(initialForm)
   const [submitted, setSubmitted] = useState(false)
+  // El código se genera una sola vez al enviar. Antes se calculaba durante el
+  // render, así que cambiaba cada vez que React repintaba y el número que veía
+  // el usuario no correspondía a nada.
+  const [ticket, setTicket] = useState('')
 
   const handleChange = (e) => {
     setForm((prev) => ({ ...prev, [e.target.name]: e.target.value }))
@@ -24,7 +28,10 @@ export default function ComplaintsPage() {
 
   const handleSubmit = (e) => {
     e.preventDefault()
+    const code = `NKR-${Date.now().toString().slice(-6)}`
+    setTicket(code)
     const msg = `*LIBRO DE RECLAMACIONES — NUDA KETO*\n\n`
+      + `*Código:* ${code}\n`
       + `*Tipo:* ${form.tipo.toUpperCase()}\n`
       + `*Nombre:* ${form.nombre}\n`
       + `*DNI/CE:* ${form.dni}\n`
@@ -76,7 +83,7 @@ export default function ComplaintsPage() {
             Hemos recibido tu {form.tipo}. Te atenderemos en un plazo máximo de <strong className="text-nk-choco">30 días calendario</strong> conforme a la ley. Recibirás respuesta por WhatsApp.
           </p>
           <p style={{ fontFamily: "'DM Mono', monospace" }} className="text-nk-gold text-xs tracking-wider">
-            CÓDIGO: NKR-{Date.now().toString().slice(-6)}
+            CÓDIGO: {ticket}
           </p>
           <button
             onClick={() => { setSubmitted(false); setForm(initialForm) }}

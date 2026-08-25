@@ -1,8 +1,9 @@
 import { useState, useMemo, useRef } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
 import { motion, AnimatePresence } from 'motion/react'
-import { products, categories, minPrice } from '../data/products'
+import { useProducts, minPrice } from '../context/ProductsContext'
 import { useCart } from '../context/CartContext'
+import { assetUrl } from '../lib/api'
 import TiltCard from '../components/effects/TiltCard'
 
 const IconSearch = () => (
@@ -74,7 +75,7 @@ function ProductStoreCard({ product }) {
           {/* Imagen */}
           <Link to={`/producto/${product.slug}`} className="block overflow-hidden aspect-4/3 relative">
             <img
-              src={product.image}
+              src={assetUrl(product.image)}
               alt={product.name}
               className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
               loading="lazy"
@@ -147,6 +148,7 @@ function ProductStoreCard({ product }) {
 }
 
 export default function StorePage() {
+  const { products, categories } = useProducts()
   const [query, setQuery] = useState('')
   // La categoría vive en la URL (?categoria=tortas) para poder compartir el enlace
   const [searchParams, setSearchParams] = useSearchParams()
@@ -208,7 +210,7 @@ export default function StorePage() {
     }
 
     return list
-  }, [query, activeCategory, priceRange, sort])
+  }, [products, query, activeCategory, priceRange, sort])
 
   const hasFilters = query || activeCategory !== 'all' || priceRange !== 'all' || sort !== 'relevance'
 
