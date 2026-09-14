@@ -7,6 +7,8 @@ const FILTERS = [
   { id: 'CON_STOCK', label: 'Con stock' },
 ]
 
+const GHOST_CATEGORY = 'general'
+
 export default function AdminStock() {
   const [products, setProducts] = useState([])
   const [loading, setLoading] = useState(true)
@@ -30,7 +32,9 @@ export default function AdminStock() {
 
   useEffect(() => { load() }, [load])
 
-  const sorted = [...products].sort((a, b) => {
+  const realProducts = products.filter((p) => p.category !== GHOST_CATEGORY)
+
+  const sorted = [...realProducts].sort((a, b) => {
     const av = a.stock ?? Infinity
     const bv = b.stock ?? Infinity
     return av - bv
@@ -54,10 +58,10 @@ export default function AdminStock() {
         {FILTERS.map((f) => {
           const n =
             f.id === 'ALL'
-              ? products.length
+              ? realProducts.length
               : f.id === 'AGOTADO'
-                ? products.filter((p) => p.stock === 0).length
-                : products.filter((p) => p.stock != null && p.stock > 0).length
+                ? realProducts.filter((p) => p.stock === 0).length
+                : realProducts.filter((p) => p.stock != null && p.stock > 0).length
           return (
             <button
               key={f.id}
