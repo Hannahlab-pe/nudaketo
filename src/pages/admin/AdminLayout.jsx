@@ -26,11 +26,17 @@ const IconChart = () => (
     <path strokeLinecap="round" strokeLinejoin="round" d="M3 3v18h18M7 14l4-4 4 4 5-6" />
   </svg>
 )
+const IconStock = () => (
+  <svg viewBox="0 0 24 24" className="h-4 w-4 shrink-0 fill-none stroke-current stroke-2">
+    <path strokeLinecap="round" strokeLinejoin="round" d="M20 7l-8-4-8 4m16 0v10l-8 4m8-14l-8 4m0 10l-8-4V7m8 14V11m0 0L4 7" />
+  </svg>
+)
 
 const NAV = [
   { to: '/admin', label: 'Resumen', icon: <IconDash />, end: true },
   { to: '/admin/pedidos', label: 'Pedidos', icon: <IconOrders /> },
   { to: '/admin/productos', label: 'Productos', icon: <IconBox /> },
+  { to: '/admin/stock', label: 'Stock', icon: <IconStock /> },
   { to: '/admin/clientes', label: 'Clientes', icon: <IconUsers /> },
   { to: '/admin/vendedores', label: 'Vendedores', icon: <IconChart /> },
 ]

@@ -31,6 +31,7 @@ const AdminLayout = lazy(() => import('./pages/admin/AdminLayout'))
 const AdminDashboard = lazy(() => import('./pages/admin/AdminDashboard'))
 const AdminOrders = lazy(() => import('./pages/admin/AdminOrders'))
 const AdminProducts = lazy(() => import('./pages/admin/AdminProducts'))
+const AdminStock = lazy(() => import('./pages/admin/AdminStock'))
 const AdminCustomers = lazy(() => import('./pages/admin/AdminCustomers'))
 const AdminSellers = lazy(() => import('./pages/admin/AdminSellers'))
 const TermsPage = lazy(() => import('./pages/TermsPage'))
@@ -136,6 +137,7 @@ function Layout() {
           <Route index element={<AdminDashboard />} />
           <Route path="pedidos" element={<AdminOrders />} />
           <Route path="productos" element={<AdminProducts />} />
+          <Route path="stock" element={<AdminStock />} />
           <Route path="clientes" element={<AdminCustomers />} />
           <Route path="vendedores" element={<AdminSellers />} />
         </Route>

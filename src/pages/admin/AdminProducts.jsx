@@ -189,10 +189,19 @@ export default function AdminProducts() {
                         OCULTO
                       </span>
                     )}
+                    {p.stock === 0 && (
+                      <span className="rounded-full bg-red-500 px-2 py-0.5 text-[9px] font-black text-white">
+                        AGOTADO
+                      </span>
+                    )}
+                    {p.stock != null && p.stock > 0 && (
+                      <span className="rounded-full border border-nk-olive/40 bg-nk-olive/10 px-2 py-0.5 text-[9px] font-bold text-nk-olive">
+                        STOCK {p.stock}
+                      </span>
+                    )}
                   </div>
                   <p className="mt-0.5 text-[11px] text-nk-muted">
                     {p.category} · {p.sizes.length} {p.sizes.length === 1 ? 'presentación' : 'presentaciones'}
-                    {p.stock != null && ` · stock ${p.stock}`}
                   </p>
                 </div>
 
