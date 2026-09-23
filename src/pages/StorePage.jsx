@@ -117,6 +117,11 @@ function ProductStoreCard({ product }) {
             <p style={{ fontFamily: "'Playfair Display', serif" }} className="text-xl font-black text-nk-choco leading-none">
               S/{from.toFixed(2)}
             </p>
+            {product.stock != null && (
+              <p style={{ fontFamily: "'DM Mono', monospace" }} className={`text-[9px] tracking-wider mt-0.5 ${product.stock === 0 ? 'text-red-400' : 'text-nk-olive'}`}>
+                {product.stock === 0 ? 'AGOTADO' : `${product.stock} en stock`}
+              </p>
+            )}
           </div>
 
           <div className="flex gap-2">
