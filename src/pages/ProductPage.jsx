@@ -175,8 +175,9 @@ export default function ProductPage() {
                 {product.sizes.map((s) => (
                   <button
                     key={s.id}
-                    onClick={() => setSelectedSize(s)}
+                    onClick={() => s.stock !== 0 && setSelectedSize(s)}
                     className={`flex-1 rounded-xl border-2 p-3 sm:p-4 text-left transition-all duration-200 ${
+                      s.stock === 0 ? 'border-nk-arena bg-nk-arena/20 opacity-50 cursor-not-allowed' :
                       selectedSize?.id === s.id ? 'border-nk-gold bg-nk-gold/5' : 'border-nk-arena hover:border-nk-gold/50 bg-white'
                     }`}
                   >
@@ -187,6 +188,12 @@ export default function ProductPage() {
                     <p style={{ fontFamily: "'Playfair Display', serif" }} className="text-nk-choco text-xl font-black mt-1">
                       S/{s.price.toFixed(2)}
                     </p>
+                    {s.stock === 0 && (
+                      <p style={{ fontFamily: "'DM Mono', monospace" }} className="text-red-400 text-[9px] tracking-wider mt-1">AGOTADO</p>
+                    )}
+                    {s.stock != null && s.stock > 0 && (
+                      <p style={{ fontFamily: "'DM Mono', monospace" }} className="text-nk-olive text-[9px] tracking-wider mt-1">{s.stock} disponibles</p>
+                    )}
                   </button>
                 ))}
               </div>
@@ -206,11 +213,13 @@ export default function ProductPage() {
 
               <button
                 onClick={handleAddToCart}
-                className={`flex-1 flex items-center justify-center gap-2 py-3 rounded-xl font-semibold text-sm transition-all duration-300 hover:scale-[1.02] active:scale-[0.98] ${
-                  added ? 'bg-nk-olive text-nk-ivory' : 'bg-nk-choco hover:bg-nk-gold text-nk-ivory'
+                disabled={selectedSize?.stock === 0}
+                className={`flex-1 flex items-center justify-center gap-2 py-3 rounded-xl font-semibold text-sm transition-all duration-300 ${
+                  selectedSize?.stock === 0 ? 'bg-nk-arena text-nk-muted cursor-not-allowed' :
+                  added ? 'bg-nk-olive text-nk-ivory' : 'bg-nk-choco hover:bg-nk-gold text-nk-ivory hover:scale-[1.02] active:scale-[0.98]'
                 }`}
               >
-                {added ? <><IconCheck />Agregado al carrito</> : <><IconCart />Agregar — S/{(selectedSize?.price * qty).toFixed(2)}</>}
+                {selectedSize?.stock === 0 ? 'Agotado' : added ? <><IconCheck />Agregado al carrito</> : <><IconCart />Agregar — S/{(selectedSize?.price * qty).toFixed(2)}</>}
               </button>
             </div>
 
