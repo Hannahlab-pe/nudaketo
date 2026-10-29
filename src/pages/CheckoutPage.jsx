@@ -18,6 +18,19 @@ export const SHIPPING_ZONES = [
 ]
 
 
+// SUNAT exige identificar al cliente en boletas desde S/ 700
+const RECEIPT_ID_REQUIRED_FROM = 700
+
+// Dígito verificador del RUC (mismo cálculo que el backend)
+function isValidRuc(ruc) {
+  if (!/^(10|15|16|17|20)\d{9}$/.test(ruc)) return false
+  const weights = [5, 4, 3, 2, 7, 6, 5, 4, 3, 2]
+  const sum = weights.reduce((acc, w, i) => acc + w * Number(ruc[i]), 0)
+  const rest = 11 - (sum % 11)
+  const check = rest === 10 ? 0 : rest === 11 ? 1 : rest
+  return check === Number(ruc[10])
+}
+
 function waitForCulqi(timeout = 6000) {
   return new Promise((resolve, reject) => {
     if (window.Culqi) return resolve(window.Culqi)
@@ -52,6 +65,7 @@ export default function CheckoutPage() {
   const [fulfillment, setFulfillment] = useState('DELIVERY')
   const [zone, setZone] = useState('lima')
   const [form, setForm] = useState({ customerName: '', phone: '', address: '', district: '', city: '', reference: '', mapsLink: '' })
+  const [receipt, setReceipt] = useState({ type: 'BOLETA', docNumber: '', billingName: '', billingAddress: '' })
   const [formError, setFormError] = useState('')
   const [paying, setPaying] = useState(false)
   const [paymentOk, setPaymentOk] = useState(false)
@@ -73,6 +87,8 @@ export default function CheckoutPage() {
   const grandTotal = Math.max(0, total - discount) + shippingCost
 
   const setField = (k) => (e) => setForm((f) => ({ ...f, [k]: e.target.value }))
+  const setReceiptField = (k) => (e) => setReceipt((r) => ({ ...r, [k]: e.target.value }))
+  const receiptIdRequired = grandTotal > RECEIPT_ID_REQUIRED_FROM
 
   const applyCode = async () => {
     const code = codeInput.trim()
@@ -120,10 +136,10 @@ export default function CheckoutPage() {
   const stateRef = useRef({})
   useEffect(() => {
     stateRef.current = {
-      items, token, fulfillment, zone: zoneId, form, grandTotal,
-      userEmail: user?.email, sellerCode: appliedCode?.code || null,
+      items, token, fulfillment, zone: zoneId, form, grandTotal, receipt,
+      userEmail: user?.email, userName: user?.name, sellerCode: appliedCode?.code || null,
     }
-  }, [items, token, fulfillment, zoneId, form, grandTotal, user?.email, appliedCode])
+  }, [items, token, fulfillment, zoneId, form, grandTotal, receipt, user?.email, user?.name, appliedCode])
 
   const openingRef = useRef(false)
   const chargingRef = useRef(false)
@@ -133,7 +149,7 @@ export default function CheckoutPage() {
     chargingRef.current = true
     setPaying(true)
     const tid = toast.loading('Procesando tu pago...')
-    const { items: cartItems, fulfillment: ff, zone: z, form: f, userEmail, sellerCode } = stateRef.current
+    const { items: cartItems, fulfillment: ff, zone: z, form: f, receipt: r, userEmail, userName, sellerCode } = stateRef.current
     // La confirmación va al correo de la cuenta (no al que se puso en el modal de Culqi)
     const email = userEmail || culqiEmail
     try {
@@ -145,6 +161,12 @@ export default function CheckoutPage() {
           email,
           items: cartItems.map((i) => ({ productId: i.id, sizeId: i.sizeId, name: i.name, qty: i.qty, price: i.price })),
           fulfillment: ff,
+          receipt: {
+            type: r.type,
+            docNumber: r.docNumber.trim() || undefined,
+            billingName: (r.type === 'FACTURA' ? r.billingName : f.customerName || userName || '').trim() || undefined,
+            billingAddress: r.type === 'FACTURA' ? r.billingAddress.trim() : undefined,
+          },
           ...(sellerCode ? { sellerCode } : {}),
           ...(ff === 'DELIVERY' ? { zone: z, customerName: f.customerName, phone: f.phone, address: f.address, district: f.district, city: f.city, reference: f.reference, mapsLink: f.mapsLink } : {}),
         }),
@@ -193,7 +215,26 @@ export default function CheckoutPage() {
     Culqi.open()
   }, [])
 
+  const validateReceipt = () => {
+    const doc = receipt.docNumber.replace(/\s+/g, '').toUpperCase()
+    if (receipt.type === 'FACTURA') {
+      if (!isValidRuc(doc)) return 'El RUC no es válido (11 dígitos)'
+      if (!receipt.billingName.trim()) return 'Ingresa la razón social para la factura'
+      if (!receipt.billingAddress.trim()) return 'Ingresa la dirección fiscal para la factura'
+      return ''
+    }
+    if (doc && !/^\d{8}$/.test(doc) && !/^[A-Z0-9]{9,12}$/.test(doc)) return 'El DNI debe tener 8 dígitos (o 9 a 12 caracteres si es carné de extranjería)'
+    if (!doc && receiptIdRequired) return 'Para compras de más de S/700 SUNAT pide tu DNI en la boleta'
+    return ''
+  }
+
   const validate = () => {
+    const receiptError = validateReceipt()
+    if (receiptError) {
+      setFormError(receiptError)
+      toast.error(receiptError)
+      return false
+    }
     if (fulfillment === 'PICKUP') { setFormError(''); return true }
     let msg = ''
     if (!form.customerName.trim()) msg = 'Ingresa tu nombre'
@@ -403,6 +444,41 @@ export default function CheckoutPage() {
                 </div>
               </>
             )}
+
+            {/* Comprobante electrónico */}
+            <div>
+              <p style={{ fontFamily: "'DM Mono', monospace" }} className="text-nk-muted text-[10px] tracking-[3px] mb-3">COMPROBANTE</p>
+              <div className="grid grid-cols-2 gap-3 max-w-md">
+                {[['BOLETA', 'Boleta', 'Con tu DNI o sin documento'], ['FACTURA', 'Factura', 'Con RUC de tu empresa']].map(([type, label, hint]) => (
+                  <button
+                    key={type}
+                    onClick={() => { setReceipt((r) => ({ ...r, type })); setFormError('') }}
+                    className={`flex flex-col items-center gap-1 p-4 rounded-xl border-2 transition-all ${receipt.type === type ? 'border-nk-gold bg-nk-gold/5' : 'border-nk-arena bg-white hover:border-nk-gold/50'}`}
+                  >
+                    <span className="text-nk-choco text-sm font-semibold">{label}</span>
+                    <span className="text-nk-muted text-[11px]">{hint}</span>
+                  </button>
+                ))}
+              </div>
+              <div className="grid sm:grid-cols-2 gap-3 max-w-2xl mt-3">
+                {receipt.type === 'BOLETA' ? (
+                  <Field
+                    label="DNI O CARNÉ DE EXTRANJERÍA" value={receipt.docNumber} onChange={setReceiptField('docNumber')}
+                    placeholder="12345678" optional={!receiptIdRequired}
+                  />
+                ) : (
+                  <>
+                    <Field label="RUC" value={receipt.docNumber} onChange={setReceiptField('docNumber')} placeholder="20123456789" />
+                    <Field label="RAZÓN SOCIAL" value={receipt.billingName} onChange={setReceiptField('billingName')} placeholder="Empresa S.A.C." />
+                    <div className="sm:col-span-2"><Field label="DIRECCIÓN FISCAL" value={receipt.billingAddress} onChange={setReceiptField('billingAddress')} placeholder="Como figura en SUNAT" /></div>
+                  </>
+                )}
+              </div>
+              {receipt.type === 'BOLETA' && receiptIdRequired && (
+                <p className="text-nk-muted text-[11px] mt-2">Para compras de más de S/700 SUNAT pide el DNI en la boleta.</p>
+              )}
+              <p className="text-nk-muted text-[11px] mt-2">Te enviaremos el comprobante electrónico a tu correo.</p>
+            </div>
           </div>
 
           {/* Columna derecha: resumen */}
